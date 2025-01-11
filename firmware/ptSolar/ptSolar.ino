@@ -243,6 +243,8 @@ void setup() {
 
   annunciate('k');
 
+  
+
   //init the I2C devices
 
   Serial.println(F("Init BME280"));
@@ -298,20 +300,24 @@ Config.BeaconSimpleDelay=10;
     //init the GPS into high altitude mode (Dynamic Model 6 – Airborne < 1g)
     initUblox();    //will continually retry this operation until its sucessful
   }
+  GPSParser.OutputNEMA(true);    ///TODO: Need to pull this from Configuration
 
   iLastErrorTxMillis = millis();      //set a starting time for the potential error messages
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loop() {
 
-  float fCurrentAlt, fSpeed, fMaxSpeed;
+  float fCurrentAlt, fSpeed, fMaxSpeed, fBattery;
   bool bXmit;
   int iSeconds;
   unsigned long msDelay;    //calculate the number of milliseconds to delay
 
 
   collectGPSStrings();      //listen to the GPS for up to 3 seconds (the function will exit out as soon as a pair of RMC and GGA strings are received)
-
+  fBattery = readBatteryVoltage();
+  Serial.print(F("Battery: "));
+  Serial.print(fBattery);
+  Serial.println("V");
 
   //Check to see if we've decoded a GPS packet recently.
   if ((GPSParser.LastDecodedMillis() + GPS_TIMEOUT_TIME) < millis()) {
@@ -439,7 +445,9 @@ void loop() {
     
      if ((millis() - timeLastXmit) > msDelay) {
       //we've waited long enough - see if we have the power to transmit
-      if (readBatteryVoltage() > 3.6) {
+      
+
+      if (fBattery > 3.0) {
         Serial.println("Transmitting");
         bXmit = true;
       } else {
@@ -765,9 +773,9 @@ void initDRA818(void) {
 
   //Cycle the transmitter quickly.  It seems to take a long time to transmit the first time after inint
   oTNC.keyTransmitter(true);
-  delay(250);   //not even long enough to actually key up...
+  delay(125);   //not even long enough to actually key up...
   oTNC.keyTransmitter(false);
-  delay(500);
+  //delay(500);
 
   //disable the DRA until ready to xmit
   digitalWrite(PIN_DRA_EN, LOW);
@@ -988,20 +996,54 @@ void doConfigMode() {
       if (byTemp == 'T') {
         //exercise the transmitter
         Serial.println(F("Test Transmit"));
+        Serial.println(F(""));
+        Serial.println(F("1. - 10 Seconds"));
+        Serial.println(F("2. - 30 Seconds"));
+        Serial.println(F("3. - 60 Seconds"));
+        Serial.println(F("4. - 120 Seconds"));
 
-        oTNC.setTransmitterType(Config.RadioType);
-        oTNC.setTxDelay(Config.RadioTxDelay);
-        oTNC.setCourtesyTone(Config.RadioCourtesyTone);
-    
-        if (Config.RadioType == 1) {
-          //this is DRA818
-          initDRA818();
+        while (!Serial.available()) {
+          //Wait for an input
         }
-        
-        annunciate('t');
-        oTNC.keyTransmitter(true);
-        delay(5000);
-        oTNC.keyTransmitter(false);
+        byTemp = Serial.read();
+
+        if (byTemp >= '1' && byTemp <= '4') {
+          oTNC.setTransmitterType(Config.RadioType);
+          oTNC.setTxDelay(Config.RadioTxDelay);
+          oTNC.setCourtesyTone(Config.RadioCourtesyTone);
+      
+          if (Config.RadioType == 1) {
+            //this is DRA818
+            initDRA818();
+          }
+          
+          annunciate('t');
+          oTNC.keyTransmitter(true);
+          switch (byTemp) {
+          case '1':
+            Serial.println(F("10 sec..."));
+            delay(10000);
+            break;
+          case '2':
+            Serial.println(F("30 sec..."));
+            delay(30000);
+            break;
+          case '3':
+            Serial.println(F("60 sec..."));
+            delay(60000);
+            break;
+          case '4':
+            Serial.println(F("120 sec..."));
+            delay(120000);
+            break;
+          default:
+            Serial.println(F("Unknown"));
+          }
+
+          oTNC.keyTransmitter(false);
+        } else {
+          Serial.println(F("Cancelling..."));
+        }
       }
       
       if (byTemp == 'E') {

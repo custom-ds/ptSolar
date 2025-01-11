@@ -435,5 +435,13 @@ void TNC::setCourtesyTone(char courtesyTone) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void TNC::keyTransmitter(bool transmit) {
   //Keys up or shuts down the transmitter.  Used for testing
-  digitalWrite(_pinPTT, transmit);    //Unkey the transmitter
+
+  if (transmit) {
+    //we're trying to key up the transmitter.
+    digitalWrite(PIN_DRA_EN, HIGH);
+    digitalWrite(_pinPTT, HIGH);
+  } else {
+    digitalWrite(_pinPTT, LOW);
+    digitalWrite(PIN_DRA_EN, LOW);
+  }
 }

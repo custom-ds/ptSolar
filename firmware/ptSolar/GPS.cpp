@@ -49,7 +49,8 @@ GPS::GPS(void) {
 	_fKnots = 0.0;
 	_fCourse = 0.0;
  
-  _lastDecodedMillis = millis();	
+  _lastDecodedMillis = millis();
+  _outputNEMA = false;
 }
 
 void GPS::clearInputBuffer(void) {
@@ -95,7 +96,9 @@ void GPS::addChar(char c) {
 			if (_szTemp[1] == 'G' && (_szTemp[2] == 'P' || _szTemp[2] == 'N') && _szTemp[3] == 'R' && _szTemp[4] == 'M' && _szTemp[5] == 'C') {
 				//we have the start of an RMC string
 
-                                Serial.println(_szTemp);
+        if (_outputNEMA) {
+          Serial.println(_szTemp);
+        }
 				_bRMCComplete = true;    //set a flag indicating that an RMC sentence has been received, therefore we have valid data
 
 				parseRMC();
@@ -106,7 +109,9 @@ void GPS::addChar(char c) {
 			} else if (_szTemp[1] == 'G' && (_szTemp[2] == 'P' || _szTemp[2] == 'N') && _szTemp[3] == 'G' && _szTemp[4] == 'G' && _szTemp[5] == 'A') {
 				//we have the start of an GGA string
 
-                                Serial.println(_szTemp);				
+        if (_outputNEMA) {
+          Serial.println(_szTemp);
+        }
 				_bGGAComplete = true;
 				parseGGA();
 				_bGotNewGGA = true;      //set a temporary flag indicating that we got a new RMC sentence

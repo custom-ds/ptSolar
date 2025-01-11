@@ -124,6 +124,9 @@ class GPS
       return _lastDecodedMillis;
     }
     
+    inline void OutputNEMA(bool output) {
+      _outputNEMA = output;
+    }
   
 
 	private:
@@ -149,6 +152,7 @@ class GPS
 		char _szGPSDate[7];
 		
 		unsigned long _lastDecodedMillis;
+    bool _outputNEMA;
 		
 		udtTime _currTime;
 		
