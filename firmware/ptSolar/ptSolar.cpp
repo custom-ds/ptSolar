@@ -19,6 +19,7 @@ Before programming for the first time, the ATmega fuses must be set.
 
 */
 
+#include <Arduino.h>
 
 #define FIRMWARE_VERSION "0.9.0"
 #define CONFIG_VERSION "PT0003"
@@ -223,6 +224,20 @@ PROGMEM const unsigned char _arySineLow[] = {128, 129, 130, 132, 133, 134, 135, 
 
 //------------------------------------------ END Variables for the internal modulation ------------------------------------------
 
+void getConfigFromEeprom();
+void annunciate(char c);
+void doConfigMode();
+void initDRA818(void);
+void initUblox(void);
+void collectGPSStrings();
+float readBatteryVoltage();
+void sendPositionSingleLine();
+void audioTone(int length);
+bool ubloxSendUBX();
+void setDefaultConfig();
+void writeConfigToEeprom();
+void sendConfigToPC();
+bool getConfigFromPC();
 
 
 void setup() {
