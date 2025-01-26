@@ -29,7 +29,7 @@ You should have received a copy of the GNU General Public License along with thi
 
 
 // 16MHz / 666 = 24.024kHz.  24kHz / 20 / 1201Hz baud
-#define TIMER1_SEED 666
+#define TIMER1_SEED 333 //666
 
 
 #define MAX_SZXMIT_SIZE 200

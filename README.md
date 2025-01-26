@@ -46,16 +46,23 @@ Open a command prompt on the PC.
 
 ```
 C:\> cd \Program Files (x86)\Arduino\hardware\tools\avr\bin
-C:\Program Files (x86)\Arduino\hardware\tools\avr\bin> avrdude.exe -p m328p -b 19200 -c avrisp -C ..\etc\avrdude.conf -P comX* -U hfuse:w:0xD6:m -U lfuse:w:0xFF:m -U efuse:w:0x05:m
+C:\...> avrdude.exe -p m328p -b 19200 -c avrisp -C ..\etc\avrdude.conf -P comX* -U lfuse:w:0xDF:m -U hfuse:w:0xD6:m -U efuse:w:0xFF:m
+```
+NOTE, EFUSE SHOULD BE FD BUT IT'S NOT WORKING AT THE MOMENT!!!
+
+Depending on your installation of the Arduino IDE, your avrdude may also be found in:
+
+```
+C:\Users\{Username}\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino17\bin
 ```
 
 This will write the fuses to the new processor.  To verify that the fuses have been written, run these commands:
 
 ```
-C:\Program Files (x86)\Arduino\hardware\tools\avr\bin> avrdude.exe -p m328p -b 19200 -c avrisp -C ..\etc\avrdude.conf -P comX* -U hfuse:r:highfuse:h -U lfuse:r:lowfuse:h -U efuse:r:exfuse:h
-C:\Program Files (x86)\Arduino\hardware\tools\avr\bin> cat highfuse
-C:\Program Files (x86)\Arduino\hardware\tools\avr\bin> cat lowfuse
-C:\Program Files (x86)\Arduino\hardware\tools\avr\bin> cat exfuse
+C:\...> avrdude.exe -p m328p -b 19200 -c avrisp -C ..\etc\avrdude.conf -P comX* -U lfuse:r:lowfuse:h -U hfuse:r:highfuse:h -U efuse:r:exfuse:h
+C:\...> type lowfuse
+C:\...> type highfuse
+C:\...> type exfuse
 ```
 
 \* Replace "comX" with whatever Com port your ArduinoISP is enumerating on.

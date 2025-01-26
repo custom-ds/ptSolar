@@ -21,7 +21,7 @@ Version 1.0.0 - January 15, 2015 - Finalized the basic configuration and license
 #include "TNC.h"
 
 ///TODO: NEED TO CAPTURE THE ENABLE PIN SEPARATELY LIKE THE PIN-PTT
-#define PIN_DRA_EN 4
+#define PIN_DRA_EN 4      //PD4
 
 TNC::TNC(void) {
   //keep track of some transmitter parameters
@@ -119,16 +119,17 @@ void TNC::xmitEnd(void) {
   
     _CRC = 0xFFFF;    //init the CRC variable
 
-    ///TODO: NEED TO FIGURE OUT IF THE DRA IS ALREADY DISABLED!!!!!!!!
-    //enbale the DRA to start xmit'ing
-    digitalWrite(PIN_DRA_EN, HIGH);
+
 delay(500);
 //Cycle the transmitter quickly.  It seems to take a long time to transmit the first time after inint
 keyTransmitter(true);
 delay(250);   //not even long enough to actually key up...
 keyTransmitter(false);
 delay(500);
-    
+
+    ///TODO: NEED TO FIGURE OUT IF THE DRA IS ALREADY DISABLED!!!!!!!!
+    //enbale the DRA to start xmit'ing
+    digitalWrite(PIN_DRA_EN, HIGH);    
     digitalWrite(_pinPTT, HIGH);    //push the PTT
     if (_transmitterType == 1) {
       delay(250);			//FIX FOR DRA818V

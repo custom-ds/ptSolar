@@ -13,9 +13,9 @@ You should have received a copy of the GNU General Public License along with thi
 
 
 Before programming for the first time, the ATmega fuses must be set.
- Extended: 0x05
+ Extended: 0xFD     -- This should be FD, but FF is required for it to work???
  High:     0xD6
- Low:      0xFF
+ Low:      0xDF
 
 */
 
@@ -56,7 +56,7 @@ Before programming for the first time, the ATmega fuses must be set.
 #define PIN_AUDIO_OUT 3   //PD3   - APRS Packet Audio
 #define PIN_DRA_EN 4      //PD4
 #define PIN_AUDIO 5       //PD5   - Audio Annunciation
-//PD6 is not used
+#define PIN_GPS_EN 6      //PD6
 #define PIN_GPS_TX 7      //PD7
 
 #define PIN_GPS_RX 8      //PB0
@@ -125,7 +125,7 @@ struct udtConfig {
 
   byte GPSSerialBaud;    //1=300, 2=1200 3=2400 4=4800 5=9600 6=19200
   bool GPSSerialInvert;    //Invert the incoming serial string.
-  byte GPSType;      //0=Generic NMEA, 1=UBlox
+  byte GPSType;      //0=Generic NMEA, 1=UBlox, 2=ATGM332D
 
   char StatusMessage[41];
   bool StatusXmitGPSFix;
@@ -227,16 +227,28 @@ PROGMEM const unsigned char _arySineLow[] = {128, 129, 130, 132, 133, 134, 135, 
 
 void setup() {
 
-  pinMode(PIN_LED, OUTPUT);
-  pinMode(PIN_AUDIO, OUTPUT);
+  //Configure the Transmitter Pins
+	pinMode(PIN_PTT_OUT, OUTPUT);
+  pinMode(PIN_DRA_EN, OUTPUT);
+  pinMode(PIN_AUDIO_OUT, OUTPUT);
 
+  //Configure the GPS Pins
+  pinMode(PIN_GPS_EN, OUTPUT);
+
+  //Shut everything down until we get booted
+  digitalWrite(PIN_PTT_OUT, LOW);    //Stop the transmit - 
+  digitalWrite(PIN_DRA_EN, LOW);    //disable the transmitter
+  digitalWrite(PIN_GPS_EN, LOW);    //disable the GPS
+
+  //Configure the Misc Pins
+  pinMode(PIN_LED, OUTPUT);
+  //pinMode(PIN_AUDIO, OUTPUT);
+  
   Serial.begin(19200);
 
 	//Define as internally moduled TNC
-  oTNC.initInternal(PIN_PTT_OUT); 	//The PINS are defined in TNC.h.
+  oTNC.initInternal(PIN_PTT_OUT);
 
-	pinMode(PIN_PTT_OUT, OUTPUT);
-  pinMode(PIN_AUDIO_OUT, OUTPUT);
 
   Serial.println(F("pt Flight Computer"));
 
@@ -284,7 +296,8 @@ void setup() {
 
 ///TODO: NEED TO GET RID OF THIS - FOR DEVEL ONLY!!!!  
 Config.BeaconType=4;
-Config.BeaconSimpleDelay=10;
+Config.BeaconSimpleDelay=30;
+Config.GPSType=2;
 ///END TODO!!!!
   
   oTNC.setTransmitterType(Config.RadioType);
@@ -300,17 +313,15 @@ Config.BeaconSimpleDelay=10;
   customInit();   //Call any custom code to init sensors, initialize variables, etc.
 
   //Send out an initial packet announcing itself.
-  oTNC.xmitStart(Config.Destination, Config.DestinationSSID, Config.Callsign, Config.CallsignSSID, Config.Path1, Config.Path1SSID, Config.Path2, Config.Path2SSID, true);
-  oTNC.xmitString((char *)">Project Traveler Flight Computer v");
-  oTNC.xmitString((char *)FIRMWARE_VERSION);
-  oTNC.xmitString((char *)" Initializing...");
-  oTNC.xmitEnd();
+  // oTNC.xmitStart(Config.Destination, Config.DestinationSSID, Config.Callsign, Config.CallsignSSID, Config.Path1, Config.Path1SSID, Config.Path2, Config.Path2SSID, true);
+  // oTNC.xmitString((char *)">Project Traveler ptSolar Flight Computer v");
+  // oTNC.xmitString((char *)FIRMWARE_VERSION);
+  // oTNC.xmitString((char *)" Initializing...");
+  // oTNC.xmitEnd();
 
-  //see if we're using a uBlox GPS, and if so, init the GPS
-  if (Config.GPSType == 1) {
-    //init the GPS into high altitude mode (Dynamic Model 6 – Airborne < 1g)
-    initUblox();    //will continually retry this operation until its sucessful
-  }
+  //init the GPS into high altitude mode (Dynamic Model 6 – Airborne < 1g)
+  initGPS(Config.GPSType);    //will continually retry this operation until its sucessful
+  
   GPSParser.OutputNEMA(true);    ///TODO: Need to pull this from Configuration
 
   iLastErrorTxMillis = millis();      //set a starting time for the potential error messages
@@ -323,8 +334,9 @@ void loop() {
   int iSeconds;
   unsigned long msDelay;    //calculate the number of milliseconds to delay
 
-
+digitalWrite(PIN_GPS_EN, LOW);    //disable the GPS
   collectGPSStrings();      //listen to the GPS for up to 3 seconds (the function will exit out as soon as a pair of RMC and GGA strings are received)
+digitalWrite(PIN_GPS_EN, LOW);    //disable the GPS  
   fBattery = readBatteryVoltage();
   Serial.print(F("Battery: "));
   Serial.print(fBattery);
@@ -751,12 +763,12 @@ void audioTone(int length) {
 
   for (int i = 0; i<length; i++) {
     if (Config.AnnounceMode & 0x02) {
-      digitalWrite(PIN_AUDIO, HIGH);
+      //digitalWrite(PIN_AUDIO, HIGH);
     }
     delayMicroseconds(200);
 
     if (Config.AnnounceMode & 0x02) {
-      digitalWrite(PIN_AUDIO, LOW);
+      //digitalWrite(PIN_AUDIO, LOW);
     }
     delayMicroseconds(200);
   }
@@ -811,12 +823,18 @@ void initDRA818(void) {
   digitalWrite(PIN_DRA_EN, LOW);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void initUblox(void) {
+void initGPS(int GPSType) {
   bool bSuccess = false;
 
   while(!bSuccess) {
     annunciate('e');    //chirp
-    bSuccess = ubloxSendUBX();
+    if (GPSType == 1) {
+      bSuccess = ubloxSendUBX();
+    }
+    if (GPSType == 2) {
+      //ATGM332D
+      bSuccess = atgmSendInit();
+    }
   }
   annunciate('i');    //double chirp for success
 }
@@ -886,6 +904,15 @@ bool ubloxSendUBX() {
   return false;    //timed out
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool atgmSendInit(void) {
+  SoftwareSerial GPS(PIN_GPS_RX, PIN_GPS_TX, Config.GPSSerialInvert);    //A True at the end indicates that the serial data is inverted.
+  GPS.begin(9600);
+
+	Serial.println(F("Init atgm GPS"));
+
+  return true;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void getConfigFromEeprom() {
   for (unsigned int i=0; i<sizeof(Config); i++) {
     *((char*)&Config + i) = EEPROM.read(i);
@@ -951,7 +978,7 @@ void setDefaultConfig() {
 
   Config.GPSSerialBaud = 5;    //1=300, 2=1200, 3=2400, 4=4800, 5=9600, 6=19200
   Config.GPSSerialInvert = 0;    //Invert the incoming signal
-  Config.GPSType = 1;      //0=Generic NMEA, 1=UBlox
+  Config.GPSType = 2;      //0=Generic NMEA, 1=UBlox, 2=ATGM332D
   Config.AnnounceMode = 1;
 
 
@@ -993,12 +1020,12 @@ void doConfigMode() {
       }
 
 
-      if (byTemp == 'R') {
+      if (byTemp == 'R' || byTemp == 'r') {
         getConfigFromEeprom();    //pull the configs from eeprom
         sendConfigToPC();
       }
 
-      if (byTemp == 'W') {
+      if (byTemp == 'W' || byTemp == 'w') {
         //take the incoming configs and load them into the Config UDT
 
         Serial.println(F("Entering config write mode..."));
@@ -1016,28 +1043,29 @@ void doConfigMode() {
         }
       }
       
-      if (byTemp == 'D') {
+      if (byTemp == 'D' || byTemp == 'd') {
         //used to reset the tracker back to N0CALL defaults
         Serial.println(F("Reset defaults"));
         setDefaultConfig();        
         annunciate('w');
       }
 
-      if (byTemp == 'T') {
+      if (byTemp == 'T' || byTemp == 't') {
         //exercise the transmitter
         Serial.println(F("Test Transmit"));
         Serial.println(F(""));
-        Serial.println(F("1. - 10 Seconds"));
-        Serial.println(F("2. - 30 Seconds"));
-        Serial.println(F("3. - 60 Seconds"));
-        Serial.println(F("4. - 120 Seconds"));
+        Serial.println(F("1. - 1.5 Seconds"));
+        Serial.println(F("2. - 10 Seconds"));
+        Serial.println(F("3. - 30 Seconds"));
+        Serial.println(F("4. - 60 Seconds"));
+        Serial.println(F("5. - 120 Seconds"));
 
         while (!Serial.available()) {
           //Wait for an input
         }
         byTemp = Serial.read();
 
-        if (byTemp >= '1' && byTemp <= '4') {
+        if (byTemp >= '1' && byTemp <= '5') {
           oTNC.setTransmitterType(Config.RadioType);
           oTNC.setTxDelay(Config.RadioTxDelay);
           oTNC.setCourtesyTone(Config.RadioCourtesyTone);
@@ -1051,18 +1079,22 @@ void doConfigMode() {
           oTNC.keyTransmitter(true);
           switch (byTemp) {
           case '1':
+            Serial.println(F("1.5 sec..."));
+            delay(1500);
+            break;
+          case '2':
             Serial.println(F("10 sec..."));
             delay(10000);
             break;
-          case '2':
+          case '3':
             Serial.println(F("30 sec..."));
             delay(30000);
             break;
-          case '3':
+          case '4':
             Serial.println(F("60 sec..."));
             delay(60000);
             break;
-          case '4':
+          case '5':
             Serial.println(F("120 sec..."));
             delay(120000);
             break;
@@ -1076,7 +1108,7 @@ void doConfigMode() {
         }
       }
       
-      if (byTemp == 'E') {
+      if (byTemp == 'E' || byTemp == 'e') {
         //exercise mode to check out all of the I/O ports
         
         Serial.println(F("Exercise"));
@@ -1308,7 +1340,7 @@ bool getConfigFromPC() {
       Config.GPSSerialInvert = atoi(szParam);    //Invert the incoming signal
 
       readConfigParam(szParam, sizeof(szParam));
-      Config.GPSType = atoi(szParam);        //0=Generic NMEA, 1=Ublox
+      Config.GPSType = atoi(szParam);        //0=Generic NMEA, 1=Ublox, 2=ATGM332D
 
 
       //Annunciator Type
@@ -1453,7 +1485,7 @@ void sendConfigToPC() {
         else Serial.write("0");
         Serial.write(0x09);
 
-        Serial.print(Config.GPSType, DEC);      //0=Generic NMEA, 1=Ublox
+        Serial.print(Config.GPSType, DEC);      //0=Generic NMEA, 1=Ublox, 2=ATGM332D
         Serial.write(0x09);
 
         //Misc System Configuration
@@ -1465,7 +1497,7 @@ void sendConfigToPC() {
 float readBatteryVoltage() {
   int iBattery = analogRead(PIN_ANALOG_BATTERY);
   float fVolts = (float)iBattery / 310.3;    //204.8 points per volt for 5.0V systems, 310.3 for 3.3V systems!!!!,
-  fVolts = fVolts * 3.141;        //times (147/100) to adjust for the resistor divider
+  fVolts = fVolts * 11;        //times (122/22) to adjust for the resistor divider (5.545)
 //  fVolts = fVolts + 0.19;      //account for the inline diode on the power supply  // not interested in diode drop for solar purposes??????????????????????????????????????????????????
   return fVolts;
 }

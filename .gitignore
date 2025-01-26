@@ -52,3 +52,4 @@ eagle.epf
 *.lck
 /hardware/ptSolar-backups
 *.kicad_sch-bak
+firmware/ptSolar/.theia/launch.json
