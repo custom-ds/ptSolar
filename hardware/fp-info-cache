@@ -1,4 +1,4 @@
-24670252490346271
+24671990424811856
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -55220,8 +55220,8 @@ CDS CSP Super Cap 8mm dia
 
 
 0
-0
-0
+2
+2
 Custom DS
 DRA818 SA818
 
@@ -55257,6 +55257,13 @@ Pulse ANT8010LL05R1575A Antenna
 0
 2
 2
+Custom DS
+Small Test Point Pin
+
+
+0
+0
+0
 Custom DS
 Stereo Jack Vertical - STX-3790-5N
 

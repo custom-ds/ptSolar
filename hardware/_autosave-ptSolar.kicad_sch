@@ -8781,7 +8781,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "Custom DS:Small Test Point Pin"
+		(property "Footprint" "TestPoint:TestPoint_THTPad_1.5x1.5mm_Drill0.7mm"
 			(at 351.79 97.79 0)
 			(effects
 				(font

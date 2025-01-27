@@ -15019,6 +15019,7 @@
 		)
 	)
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_2x04_P2.54mm_Vertical"
+		(locked yes)
 		(layer "F.Cu")
 		(uuid "fa1c7c57-5b70-425d-a437-b7fad66f4cb7")
 		(at 155.7 90.74 90)
