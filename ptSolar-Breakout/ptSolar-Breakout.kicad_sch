@@ -3339,6 +3339,15 @@
 				(hide yes)
 			)
 		)
+		(property "Digikey" "CP-002AHPJCT-ND "
+			(at 58.42 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "9f92b9c2-7b51-45ad-abd4-06c1a96100ea")
 		)
@@ -3855,7 +3864,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "6 Pin Male Header"
+		(property "Value" "6 Pin Female Socket"
 			(at 171.4499 78.74 90)
 			(effects
 				(font
@@ -3892,7 +3901,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "732-5394-ND"
+		(property "Digikey" "952-1781-ND"
 			(at 171.45 83.82 0)
 			(effects
 				(font
@@ -3946,7 +3955,7 @@
 				)
 			)
 		)
-		(property "Value" "Conn_01x03"
+		(property "Value" "3 Pin Male Header"
 			(at 85.09 121.92 0)
 			(effects
 				(font
@@ -3973,6 +3982,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 85.09 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey" "732-5316-ND"
 			(at 85.09 115.57 0)
 			(effects
 				(font
@@ -4611,7 +4629,7 @@
 				)
 			)
 		)
-		(property "Value" "Conn_02x04_Odd_Even"
+		(property "Value" "8 Pin Female Socket"
 			(at 118.11 109.22 0)
 			(effects
 				(font
@@ -4638,6 +4656,15 @@
 			)
 		)
 		(property "Description" "Generic connector, double row, 02x04, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 116.84 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey" "952-1790-ND"
 			(at 116.84 115.57 0)
 			(effects
 				(font
@@ -5123,7 +5150,7 @@
 				)
 			)
 		)
-		(property "Value" "SW_SPST"
+		(property "Value" "Reset Switch"
 			(at 214.63 85.09 0)
 			(effects
 				(font
@@ -5150,6 +5177,15 @@
 			)
 		)
 		(property "Description" "Single Pole Single Throw (SPST) switch"
+			(at 214.63 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey" "CKN9104CT-ND"
 			(at 214.63 88.9 0)
 			(effects
 				(font
@@ -5192,7 +5228,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "C"
+		(property "Value" "Piezo Buzzer"
 			(at 180.34 130.8099 0)
 			(effects
 				(font
@@ -5220,6 +5256,15 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
+			(at 176.53 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey" "102-1155-ND"
 			(at 176.53 129.54 0)
 			(effects
 				(font
@@ -5262,7 +5307,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1N4148W"
+		(property "Value" "1N4007FL"
 			(at 168.91 129.5399 90)
 			(effects
 				(font
@@ -5280,7 +5325,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.vishay.com/docs/85748/1n4148w.pdf"
+		(property "Datasheet" ""
 			(at 166.37 128.27 0)
 			(effects
 				(font
@@ -5309,6 +5354,15 @@
 		)
 		(property "Sim.Pins" "1=K 2=A"
 			(at 166.37 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey" "1655-1N4007FLCT-ND"
+			(at 166.37 128.27 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5492,7 +5546,7 @@
 				)
 			)
 		)
-		(property "Value" "LM1085-5.0"
+		(property "Value" "LM1086-5.0"
 			(at 99.06 81.28 0)
 			(effects
 				(font
@@ -5510,7 +5564,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/lm1085.pdf"
+		(property "Datasheet" ""
 			(at 99.06 85.09 0)
 			(effects
 				(font
@@ -5520,6 +5574,15 @@
 			)
 		)
 		(property "Description" "3A 25V Linear Regulator, Fixed Output 5.0V, TO-220/TO-263"
+			(at 99.06 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey" "LM1086ISX-5.0/NOPBCT-ND"
 			(at 99.06 85.09 0)
 			(effects
 				(font
