@@ -50,8 +50,8 @@ eagle.epf
 
 # file locks introduced since 7.x
 *.lck
-/hardware/ptSolar-backups
-/hardware/ptSolar-Breakout/ptSolar-Breakout-backups
+/ptSolar/ptSolar-backups
+/ptSolar-Breakout/ptSolar-Breakout-backups
 
 *.kicad_sch-bak
-firmware/ptSolar/.theia
+/firmware/ptSolar/.theia

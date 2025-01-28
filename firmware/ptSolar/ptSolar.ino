@@ -334,9 +334,8 @@ void loop() {
   int iSeconds;
   unsigned long msDelay;    //calculate the number of milliseconds to delay
 
-digitalWrite(PIN_GPS_EN, LOW);    //disable the GPS
   collectGPSStrings();      //listen to the GPS for up to 3 seconds (the function will exit out as soon as a pair of RMC and GGA strings are received)
-digitalWrite(PIN_GPS_EN, LOW);    //disable the GPS  
+
   fBattery = readBatteryVoltage();
   Serial.print(F("Battery: "));
   Serial.print(fBattery);
@@ -650,6 +649,8 @@ void collectGPSStrings() {
       break;
   }
 
+  digitalWrite(PIN_GPS_EN, HIGH);    //enable the GPS
+
   GPSParser.clearInputBuffer();
   GPSParser.ClearSentenceFlags();      //clear out the temporary flags to indicate that the new sentences have come in
 
@@ -674,6 +675,9 @@ void collectGPSStrings() {
       }
     }
   }
+
+
+  digitalWrite(PIN_GPS_EN, LOW);    //shut the GPS back down
 
   return;
 }
