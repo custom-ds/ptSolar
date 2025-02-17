@@ -9610,7 +9610,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "YAG3404TR-ND"
+		(property "Digikey" "YAG3404CT-ND"
 			(at 104.14 196.85 0)
 			(effects
 				(font
@@ -10714,7 +10714,7 @@
 				(justify left bottom)
 			)
 		)
-		(property "Value" "MEGA8-AI"
+		(property "Value" "ATMega 328p-AU"
 			(at 59.182 43.688 0)
 			(effects
 				(font
@@ -15900,7 +15900,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "445-1420-2-ND"
+		(property "Digikey" "445-1420-1-ND"
 			(at 259.08 203.2 0)
 			(effects
 				(font

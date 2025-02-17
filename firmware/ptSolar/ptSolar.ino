@@ -141,6 +141,9 @@ struct udtConfig {
   char RadioFreqTx[9];
   char RadioFreqRx[9];
 
+  //i2c devices to initialize
+  byte i2cBME280;
+
   unsigned int CheckSum;    //sum of the callsign element.  If it doesn't match, then it reinitializes the EEPROM
 };
 udtConfig Config;
@@ -268,14 +271,41 @@ void setup() {
 
   
 
+
+
+  getConfigFromEeprom();
+
+///TODO: NEED TO GET RID OF THIS - FOR DEVEL ONLY!!!!  
+Config.BeaconType=4;
+Config.BeaconSimpleDelay=30;
+Config.GPSType=2;
+Config.i2cBME280=0;
+///END TODO!!!!
+  
+  oTNC.setTransmitterType(Config.RadioType);
+  oTNC.setTxDelay(Config.RadioTxDelay);
+  oTNC.setCourtesyTone(Config.RadioCourtesyTone);
+
+
+  if (Config.RadioType == 1) {
+    //this is DRA818
+    initDRA818();
+  }
+
   //init the I2C devices
 
-  Serial.println(F("Init BME280"));
-  Pressure.setI2CAddress(0x76);
-  if (Pressure.beginI2C() == false) //Begin communication over I2C
-  {
-    Serial.println(F(" Could NOT init!"));
+  if (Config.i2cBME280 == 1) {
+    //we're supposed to initialize the BME280
+    Serial.println(F("Init BME280"));
+    Pressure.setI2CAddress(0x76);
+    if (Pressure.beginI2C() == false) //Begin communication over I2C
+    {
+      Serial.println(F(" Could NOT init!"));
+    }
+  } else {
+    Serial.println(F("No I2C devices to init"));
   }
+  
   
 
 
@@ -292,23 +322,6 @@ void setup() {
     }
   }
 
-  getConfigFromEeprom();
-
-///TODO: NEED TO GET RID OF THIS - FOR DEVEL ONLY!!!!  
-Config.BeaconType=4;
-Config.BeaconSimpleDelay=30;
-Config.GPSType=2;
-///END TODO!!!!
-  
-  oTNC.setTransmitterType(Config.RadioType);
-  oTNC.setTxDelay(Config.RadioTxDelay);
-  oTNC.setCourtesyTone(Config.RadioCourtesyTone);
-
-
-  if (Config.RadioType == 1) {
-    //this is DRA818
-    initDRA818();
-  }
 
   customInit();   //Call any custom code to init sensors, initialize variables, etc.
 
@@ -334,12 +347,20 @@ void loop() {
   int iSeconds;
   unsigned long msDelay;    //calculate the number of milliseconds to delay
 
-  collectGPSStrings();      //listen to the GPS for up to 3 seconds (the function will exit out as soon as a pair of RMC and GGA strings are received)
+  //collectGPSStrings();      //listen to the GPS for up to 3 seconds (the function will exit out as soon as a pair of RMC and GGA strings are received)
 
   fBattery = readBatteryVoltage();
   Serial.print(F("Battery: "));
   Serial.print(fBattery);
   Serial.println("V");
+
+  //check to see if we have sufficient battery to run the GPS
+  if (fBattery > 4.0) {
+    Serial.println(F("Batt > 4. Checking the GPS"));
+    collectGPSStrings();
+  } else {
+    Serial.println(F("Batt < 4.0.  Not checking GPS"));
+  }
 
   //Check to see if we've decoded a GPS packet recently.
   if ((GPSParser.LastDecodedMillis() + GPS_TIMEOUT_TIME) < millis()) {
@@ -785,6 +806,7 @@ void audioTone(int length) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void initDRA818(void) {
 
+  Serial.println(F("Enabling the 818-V"));
   digitalWrite(PIN_DRA_EN, HIGH);
   
   Serial.println(F("Init DRA818"));
@@ -824,6 +846,7 @@ void initDRA818(void) {
   oTNC.keyTransmitter(false);
   
   //disable the DRA until we're ready to xmit
+  Serial.println(F("Powering down the 818-V"));
   digitalWrite(PIN_DRA_EN, LOW);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1121,13 +1144,8 @@ void doConfigMode() {
         Config.AnnounceMode = 0x03;    //temporarily set the announce mode to both
         annunciate('x');
         
-        int iBattery = analogRead(PIN_ANALOG_BATTERY);
-        float fVolts = (float)iBattery / 204.8;    //204.8 points per volt,
-        fVolts = fVolts * 3.141;        //times (147/100) to adjust for the resistor divider
-        fVolts = fVolts + 0.19;      //account for the inline diode on the power supply
-
         Serial.print(F("Batt: "));
-        Serial.println(fVolts);
+        Serial.println(readBatteryVoltage());
 
         
   
@@ -1501,7 +1519,7 @@ void sendConfigToPC() {
 float readBatteryVoltage() {
   int iBattery = analogRead(PIN_ANALOG_BATTERY);
   float fVolts = (float)iBattery / 310.3;    //204.8 points per volt for 5.0V systems, 310.3 for 3.3V systems!!!!,
-  fVolts = fVolts * 11;        //times (122/22) to adjust for the resistor divider (5.545)
+  fVolts = fVolts * 5.545;        //times (122/22) to adjust for the resistor divider (5.545)
 //  fVolts = fVolts + 0.19;      //account for the inline diode on the power supply  // not interested in diode drop for solar purposes??????????????????????????????????????????????????
   return fVolts;
 }

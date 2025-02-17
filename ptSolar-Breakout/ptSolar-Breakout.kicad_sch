@@ -4072,7 +4072,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "445-1420-2-ND"
+		(property "Digikey" "445-1420-1-ND"
 			(at 114.3 88.9 0)
 			(effects
 				(font
