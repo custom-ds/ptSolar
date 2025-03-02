@@ -360,6 +360,7 @@ void loop() {
     collectGPSStrings();
   } else {
     Serial.println(F("Batt < 4.0.  Not checking GPS"));
+    delay(750);   //wait for about the amount of time that we'd normally spend grabbing a GPS reading
   }
 
   //Check to see if we've decoded a GPS packet recently.
@@ -841,9 +842,9 @@ void initDRA818(void) {
   delay(1000);      //wait for transmitter to change frequency
 
   //Cycle the transmitter quickly.  It seems to take a long time to transmit the first time after inint
-  oTNC.keyTransmitter(true);
-  delay(250);   //not even long enough to actually key up...
-  oTNC.keyTransmitter(false);
+  // oTNC.keyTransmitter(true);
+  // delay(250);   //not even long enough to actually key up...
+  // oTNC.keyTransmitter(false);
   
   //disable the DRA until we're ready to xmit
   Serial.println(F("Powering down the 818-V"));

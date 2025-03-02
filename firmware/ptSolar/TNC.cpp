@@ -46,9 +46,22 @@ void TNC::initKISS(int pinTx, int pinRx) {
   _pinTx = pinTx;
   _pinRx = pinRx;
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Starts the process of sending an APRS packet. Header information is passed in to address and route the packet appropriately.
+ * @param szDest The destination callsign of the packet
+ * @param destSSID The destination SSID of the packet
+ * @param szCall The source callsign of the packet
+ * @param callSSID The source SSID of the packet
+ * @param szPath1 The first path of the packet
+ * @param path1SSID The first path's SSID
+ * @param szPath2 The second path of the packet
+ * @param path2SSID The second path's SSID
+ * @param bUsePath A boolean indicating whether or not to use the path information
+ * @note  This function is called to start the transmission of a packet.  It will start the timer and begin the process of transmitting the packet.  Calling this function indicates that the packet is ready to be transmitted.  The packet will be transmitted in the background, and the function will return immediately.
+ */
 void TNC::xmitStart(char *szDest, char destSSID, char *szCall, char callSSID, char *szPath1, char path1SSID, char *szPath2, char path2SSID, bool bUsePath) {
-  //Assembles the header of the transmitted packet
+
   byte i;
 
 
@@ -104,8 +117,14 @@ void TNC::xmitStart(char *szDest, char destSSID, char *szCall, char callSSID, ch
   
   xmitChar(0x03);    //Control Byte
   xmitChar(0xF0);    //PID    
+
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * @brief This function is called to start the transmission of a packet.  It will start the timer and begin the process of transmitting the packet.
+ * @note  Calling this function indicates that the packet is ready to be transmitted.  The packet will be transmitted in the background, and the function will return immediately.
+ */
 void TNC::xmitEnd(void) {
 
   if (_modulateInternally) {
@@ -120,21 +139,22 @@ void TNC::xmitEnd(void) {
     _CRC = 0xFFFF;    //init the CRC variable
 
 
-delay(500);
-//Cycle the transmitter quickly.  It seems to take a long time to transmit the first time after inint
-keyTransmitter(true);
-delay(250);   //not even long enough to actually key up...
-keyTransmitter(false);
-delay(500);
+// delay(500);
+// //Cycle the transmitter quickly.  It seems to take a long time to transmit the first time after inint
+// keyTransmitter(true);
+// delay(250);   //not even long enough to actually key up...
+// keyTransmitter(false);
+// delay(500);
 
-    ///TODO: NEED TO FIGURE OUT IF THE DRA IS ALREADY DISABLED!!!!!!!!
-    //enbale the DRA to start xmit'ing
+    //Enable the DRA to start xmit'ing
     digitalWrite(PIN_DRA_EN, HIGH);    
     digitalWrite(_pinPTT, HIGH);    //push the PTT
-    if (_transmitterType == 1) {
-      delay(250);			//FIX FOR DRA818V
-      delay(1000);
-    }
+
+
+    // if (_transmitterType == 1) {
+    //   delay(250);			//FIX FOR DRA818V
+    //   delay(1000);
+    // }
     _startTimer1ISR();
   
     //wait for the state machine to get to a State 5, which is when it shuts down the transmitter.
