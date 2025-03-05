@@ -1,6 +1,6 @@
 /*
 Project: Traveler ptSolar Firmware
-Copywrite 2011-2019 - Zack Clobes (W0ZC), Custom Digital Services, LLC
+Copywrite 2011-2025 - Zack Clobes (W0ZC), Custom Digital Services, LLC
 
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
@@ -13,9 +13,9 @@ You should have received a copy of the GNU General Public License along with thi
 
 
 Before programming for the first time, the ATmega fuses must be set.
- Extended: 0xFD     -- This should be FD, but FF is required for it to work???
- High:     0xD6
  Low:      0xDF
+ High:     0xD6
+ Extended: 0xFD
 
 */
 

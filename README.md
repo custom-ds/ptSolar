@@ -45,7 +45,12 @@ Close out of the Boards Manager dialog, and the back under Tools &rarr; Board, y
 ## Setting the Controller Flags
 If this is a brand new ptSolar board that has never been programmed before, there are several commands that must be run from a DOS command prompt. If the ptSolar was purchased as an assembled and tested kit, you can skip these steps.
 
-Open a command prompt on the PC.
+The fuses are to be set as follows:
+* Low: 0xFF
+* High: 0xD6
+* Extended: 0xFD
+
+To program the fuses using the AVRDude tool (which is included in the Arduino IDE, and works with the Arduino As ISP programmer), open a command prompt on the PC.
 
 ```
 C:\> cd \Program Files (x86)\Arduino\hardware\tools\avr\bin
@@ -59,6 +64,14 @@ C:\Users\{Username}\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0
 
 This will write the fuses to the new processor.  To verify that the fuses have been written, run these commands:
 
+```
+avrdude.exe -p m328p -b 19200 -c avrisp -C ..\etc\avrdude.conf -P comX* -U lfuse:w:0xFF:m -U hfuse:w:0xD6:m -U efuse:w:0xFD:m 
+```
+
+\* Replace "comX" with whatever Com port your ArduinoISP is enumerating on.
+
+
+### Verifying the Fuses
 ```
 C:\...> avrdude.exe -p m328p -b 19200 -c avrisp -C ..\etc\avrdude.conf -P comX* -U lfuse:r:lowfuse:h -U hfuse:r:highfuse:h -U efuse:r:exfuse:h
 C:\...> type lowfuse
