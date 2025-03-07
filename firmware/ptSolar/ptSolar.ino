@@ -21,7 +21,7 @@ Before programming for the first time, the ATmega fuses must be set.
 
 
 #define FIRMWARE_VERSION "0.9.0"
-#define CONFIG_VERSION "PT0003"
+#define CONFIG_VERSION "PT0100"
 #define CONFIG_PROMPT "\n# "
 
 
@@ -103,7 +103,7 @@ struct udtConfig {
   char Symbol;
   char SymbolPage;
 
-  byte BeaconType;    //0=seconds-delay, 1=Speed Smart Beaconing, 2=Altitude Smart Beaconing, 3=Time Slots
+  byte BeaconType;    //0=seconds-delay, 1=Speed Smart Beaconing, 2=Altitude Smart Beaconing, 3=Time Slots, 4=Low-power mode
   unsigned long BeaconSimpleDelay;
 
   unsigned int BeaconAltitudeThreshLow;
@@ -141,8 +141,14 @@ struct udtConfig {
   char RadioFreqTx[9];
   char RadioFreqRx[9];
 
-  //i2c devices to initialize
-  byte i2cBME280;
+  //Enable the BME280 temperature/pressure sensor
+  bool i2cBME280;
+
+  //Beacon Type 4 Settings
+  unsigned int VoltThreshGPS;    //The voltage threshold to activate the GPS and read a position (in millivolts)
+  unsigned int VoltThreshXmit;    //The voltage threshold to transmit a packet (in millivolts)
+  unsigned int MinTimeBetweenXmits;    //The minimum time between transmissions (in seconds)
+  
 
   unsigned int CheckSum;    //sum of the callsign element.  If it doesn't match, then it reinitializes the EEPROM
 };
@@ -270,30 +276,12 @@ void setup() {
   annunciate('k');
 
   
-
-
-
-  getConfigFromEeprom();
-
-///TODO: NEED TO GET RID OF THIS - FOR DEVEL ONLY!!!!  
-Config.BeaconType=4;
-Config.BeaconSimpleDelay=30;
-Config.GPSType=2;
-Config.i2cBME280=0;
-///END TODO!!!!
-  
   oTNC.setTransmitterType(Config.RadioType);
   oTNC.setTxDelay(Config.RadioTxDelay);
   oTNC.setCourtesyTone(Config.RadioCourtesyTone);
 
 
-  if (Config.RadioType == 1) {
-    //this is DRA818
-    initDRA818();
-  }
-
   //init the I2C devices
-
   if (Config.i2cBME280 == 1) {
     //we're supposed to initialize the BME280
     Serial.println(F("Init BME280"));
@@ -326,6 +314,7 @@ Config.i2cBME280=0;
   customInit();   //Call any custom code to init sensors, initialize variables, etc.
 
   //Send out an initial packet announcing itself.
+  // if (Config.RadioType == 1) initDRA818();    //Configure the transmitter to correct frequency
   // oTNC.xmitStart(Config.Destination, Config.DestinationSSID, Config.Callsign, Config.CallsignSSID, Config.Path1, Config.Path1SSID, Config.Path2, Config.Path2SSID, true);
   // oTNC.xmitString((char *)">Project Traveler ptSolar Flight Computer v");
   // oTNC.xmitString((char *)FIRMWARE_VERSION);
@@ -371,6 +360,7 @@ void loop() {
       //it's been 45 seconds since the last time that we transmitted an error - so transmit
 
       annunciate('g');
+      if (Config.RadioType == 1) initDRA818();    //Configure the transmitter to correct frequency
       oTNC.xmitStart(Config.Destination, Config.DestinationSSID, Config.Callsign, Config.CallsignSSID, Config.Path1, Config.Path1SSID, Config.Path2, Config.Path2SSID, true);
       oTNC.xmitString((char *)">Lost GPS for over 45 seconds!");
       oTNC.xmitEnd();
@@ -548,6 +538,8 @@ void sendPositionSingleLine() {
 	  insideTemp = (double)Pressure.readTempC();
 
   }
+
+  if (Config.RadioType == 1) initDRA818();    //Configure the transmitter to correct frequency
   oTNC.xmitStart(Config.Destination, Config.DestinationSSID, Config.Callsign, Config.CallsignSSID, Config.Path1, Config.Path1SSID, Config.Path2, Config.Path2SSID, (GPSParser.Altitude() < Config.DisablePathAboveAltitude));
 
   //      /155146h3842.00N/09655.55WO301/017/A=058239
@@ -789,12 +781,12 @@ void audioTone(int length) {
 
   for (int i = 0; i<length; i++) {
     if (Config.AnnounceMode & 0x02) {
-      //digitalWrite(PIN_AUDIO, HIGH);
+      digitalWrite(PIN_AUDIO, HIGH);
     }
     delayMicroseconds(200);
 
     if (Config.AnnounceMode & 0x02) {
-      //digitalWrite(PIN_AUDIO, LOW);
+      digitalWrite(PIN_AUDIO, LOW);
     }
     delayMicroseconds(200);
   }
@@ -866,7 +858,11 @@ void initGPS(int GPSType) {
   }
   annunciate('i');    //double chirp for success
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief  Initialize the uBlox GPS module.
+ * @return true if the GPS initialized successfully, false if it did not.
+ */
 bool ubloxSendUBX() {
   //start up the GPS serial port - always use 9600 to init the UBlox
   SoftwareSerial GPS(PIN_GPS_RX, PIN_GPS_TX, Config.GPSSerialInvert);    //A True at the end indicates that the serial data is inverted.
@@ -931,8 +927,12 @@ bool ubloxSendUBX() {
   }
   return false;    //timed out
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool atgmSendInit(void) {
+
+/**
+ * @brief  Initialize the ATGM332D GPS module.
+ * @return true if the GPS initialized successfully, false if it did not.
+ */
+bool atgmSendInit() {
   SoftwareSerial GPS(PIN_GPS_RX, PIN_GPS_TX, Config.GPSSerialInvert);    //A True at the end indicates that the serial data is inverted.
   GPS.begin(9600);
 
@@ -963,7 +963,11 @@ void getConfigFromEeprom() {
   }
 
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief  Write the default configuration to the EEPROM.
+ * @note   Used when the EEPROM is not initialized or has been corrupted. Checksum is based on the string inside of Config.Callsign.
+ */
+
 void setDefaultConfig() {
   strcpy(Config.Callsign, "N0CALL");
   Config.CallsignSSID = '0';
@@ -1008,6 +1012,12 @@ void setDefaultConfig() {
   Config.GPSSerialInvert = 0;    //Invert the incoming signal
   Config.GPSType = 2;      //0=Generic NMEA, 1=UBlox, 2=ATGM332D
   Config.AnnounceMode = 1;
+
+  Config.i2cBME280 = 0;    //initialize the BME280
+
+  Config.VoltThreshGPS = 3500;    //3.5V
+  Config.VoltThreshXmit = 4000;    //4.0V
+  Config.MinTimeBetweenXmits = 30;    //30 seconds
 
 
 
@@ -1175,7 +1185,14 @@ void doConfigMode() {
   }
   Serial.println(F("Exiting config mode..."));
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * @brief Reads in serial line data from the PC until it finds a tab (0x09) or an End of Transmission (0x04) character.
+ * @param szParam - The array to store the incoming data while it's being collected. This parameter is by reference and will be modified.
+ * @param iMaxLen - The maximum length of the incoming data. Any data exceeding the iMaxLen will be discarded.
+ * @note  The function will timeout if it doesn't receive anything within 1 second.
+ */
 void readConfigParam(char *szParam, int iMaxLen) {
   byte c;
   int iSize;
@@ -1206,7 +1223,12 @@ void readConfigParam(char *szParam, int iMaxLen) {
 
   Serial.println(F("timeout"));
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Reads in the configuration data from the PC and loads it into the Config UDT.
+ * @return True if the configuration data was successfully read in.  False if there was an error.
+ * @note  
+ */
 bool getConfigFromPC() {
 
   char szParam[45];
@@ -1224,7 +1246,7 @@ bool getConfigFromPC() {
       //we have the start to a config string
 
 
-      readConfigParam(szParam, sizeof(szParam));    //should be PT0002
+      readConfigParam(szParam, sizeof(szParam));    //should be PT01xx for the ptSolar
       if (strcmp(szParam, CONFIG_VERSION) != 0) {
         //not a config string
         Serial.println(F("Failed to find Config Type param."));
@@ -1370,6 +1392,19 @@ bool getConfigFromPC() {
       readConfigParam(szParam, sizeof(szParam));
       Config.AnnounceMode = atoi(szParam);
 
+      //BME280 Configuration
+      readConfigParam(szParam, sizeof(szParam));
+      Config.i2cBME280 = szParam[0] == '1';
+
+      //Beacon Type 4 Configuration
+      readConfigParam(szParam, sizeof(szParam));
+      Config.VoltThreshGPS = atoi(szParam);   //Threshold for voltage before activating the GPS receiver
+      readConfigParam(szParam, sizeof(szParam));
+      Config.VoltThreshXmit = atoi(szParam);   //Threshold for voltage before transmitting a packet
+      readConfigParam(szParam, sizeof(szParam));
+      Config.MinTimeBetweenXmits = atoi(szParam);   //Minimum time between transmissions in the event we have solid voltage
+
+
 
       unsigned int iCheckSum = 0;
       for (int i=0; i<7; i++) {
@@ -1381,7 +1416,11 @@ bool getConfigFromPC() {
   }
   return false;
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/** 
+ * @brief Sends the configuration data to the PC so that the configuration can be verified and managed.
+ * @note  This function will send the configuration data to the PC in a tab-delimited format. 
+ */
 void sendConfigToPC() {
 //dump the configs out to the host PC
         Serial.write(0x01);
@@ -1513,6 +1552,22 @@ void sendConfigToPC() {
 
         //Misc System Configuration
         Serial.print(Config.AnnounceMode, DEC);    //0=No annunciator, 1=LED only, 2=LED and buzzer
+        Serial.write(0x09);
+
+        //BME280 Configuration
+        if (Config.i2cBME280) Serial.write("1");
+        else Serial.write("0");
+        Serial.write(0x09);
+
+        //Beacon Type 4 Configuration
+        Serial.print(Config.VoltThreshGPS, DEC);
+        Serial.write(0x09);
+
+        Serial.print(Config.VoltThreshXmit, DEC);
+        Serial.write(0x09);
+
+        Serial.print(Config.MinTimeBetweenXmits, DEC);
+
 
         Serial.write(0x04);      //End of string
 }
