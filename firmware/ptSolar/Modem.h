@@ -11,8 +11,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef APRS_h
-#define APRS_h
+#ifndef Modem_h
+#define Modem_h
 
 
 #include <stdint.h>   //standard data types available, such as uint8_t
@@ -99,13 +99,13 @@ PROGMEM const unsigned char _arySineLow[] = {128, 129, 130, 132, 133, 134, 135, 
 
 
 
-class APRS {
+class Modem {
   public:
     // Constructor
-    APRS();
+    Modem();
 
     // Public Functions
-    void APRS::init(uint8_t pinEnable, uint8_t pinPTT, uint8_t pinTxAudio, uint8_t pinSerialTx, uint8_t pinSerialRx);
+    void init(uint8_t pinEnable, uint8_t pinPTT, uint8_t pinTxAudio, uint8_t pinSerialTx, uint8_t pinSerialRx);
     void PTT(bool tx);
     void setDebugLevel(uint8_t level);
 

@@ -18,7 +18,8 @@ Version 1.0.0 - March 9, 2025 - Initial Release.
 #include "ptTracker.h"
 
 ptTracker::ptTracker() {
-    //Initializer
+    //Constructor
+
 }
 
 void ptTracker::init(uint8_t pinLED, uint8_t pinPiezo, uint8_t pinBattery, uint8_t annunciateMode) {

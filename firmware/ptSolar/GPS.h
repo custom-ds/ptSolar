@@ -22,6 +22,7 @@ You should have received a copy of the GNU General Public License along with thi
 #define _MAX_LATITUDE_LEN 12
 #define _MAX_LONGITUDE_LEN 13
 #define _METERS_TO_FEET 3.2808399
+#define GPS_MAX_COLLECTION_TIME 3000    //number of millis to wait while collecting the two GPS strings.
 
 
 struct udtTime {
@@ -33,8 +34,11 @@ struct udtTime {
 class GPS
 {
   public:
-    GPS(void);
-    void clearInputBuffer(void);
+    GPS(uint8_t pinGPSRx, uint8_t pinGPSTx, uint8_t pinGPSEnable);
+    void initGPS();
+    void collectGPSStrings();
+
+    void clearInputBuffer();
     void addChar(char c);
     void getLatitude(char *sz);
     void getLongitude(char *sz);
@@ -112,21 +116,13 @@ class GPS
       _bGotNewGGA = false;
     }
     
-    inline bool GotNewRMC() {
-      return _bGotNewRMC;
-    }
+    inline bool GotNewRMC() { return _bGotNewRMC; }
     
-    inline bool GotNewGGA() {
-      return _bGotNewGGA;
-    }
+    inline bool GotNewGGA() { return _bGotNewGGA; }
     
-    inline unsigned long LastDecodedMillis() {
-      return _lastDecodedMillis;
-    }
+    inline unsigned long LastDecodedMillis() { return _lastDecodedMillis; }
     
-    inline void OutputNEMA(bool output) {
-      _outputNEMA = output;
-    }
+    inline void setDebugNEMA(bool output) { _outputNEMA = output; }
   
 
 	private:
@@ -138,6 +134,10 @@ class GPS
 	  
 	  
 		// properties
+    uint8_t _pinGPSRx;
+    uint8_t _pinGPSTx;
+    uint8_t _pinGPSEnable;
+
 		char _szTemp[_MAX_SENTENCE_LEN];
 		char _szLatitude[_MAX_LATITUDE_LEN];
 		char _cLatitudeHemi;

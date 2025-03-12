@@ -22,20 +22,28 @@ Version 1.0.0 - January 15, 2015 - Finalized the basic configuration and license
 
 #include "GPS.h"
 
+#include <SoftwareSerial.h>
+
 
 
 
 
 //Public Methods
-GPS::GPS(void) {
-  
-  //Constructor - initialize the vars
-  _szTemp[0] = 0;
+GPS::GPS(uint8_t pinGPSRx, uint8_t pinGPSTx, uint8_t pinGPSEnable) {
+	//Initializer
+	this->_pinGPSRx = pinGPSRx;
+	this->_pinGPSTx = pinGPSTx;
+	this->_pinGPSEnable = pinGPSEnable;
+	
+
+	
+	//Constructor - initialize the vars
+	_szTemp[0] = 0;
 	_iTempPtr = 0;
 	_bFoundStart = false;
 	_bRMCComplete = false;
 	_bGGAComplete = false;  
- 
+
 	strcpy(_szLatitude, "1234.5678");
 	strcpy(_szLongitude, "12345.6789");
 	strcpy(_szGPSDate, "000000"); 
@@ -48,9 +56,68 @@ GPS::GPS(void) {
 	_fAltitude = 0.0;
 	_fKnots = 0.0;
 	_fCourse = 0.0;
- 
-  _lastDecodedMillis = millis();
-  _outputNEMA = false;
+
+	_lastDecodedMillis = millis();
+	_outputNEMA = false;
+}
+
+void GPS::initGPS() {
+	bool bSuccess = false;
+
+	while(!bSuccess) {
+		//Tracker.annunciate('e');    //chirp
+
+		SoftwareSerial GPS(this->_pinGPSRx, this->_pinGPSTx, false);
+		GPS.begin(9600);
+
+		Serial.println(F("Init atgm GPS"));
+
+		///TODO: Need to configure the GPS receiver
+
+		return true;    
+
+	}
+	//Tracker.annunciate('i');    //double chirp for success
+}
+
+
+void GPS::collectGPSStrings() {
+	SoftwareSerial GPS(this->_pinGPSRx, this->_pinGPSTx, false);    //A True at the end indicates that the serial data is inverted.
+	GPS.begin(9600);
+
+	
+
+	digitalWrite(this->_pinGPSEnable, HIGH);    //enable the GPS
+
+	this->clearInputBuffer();
+	this->ClearSentenceFlags();      //clear out the temporary flags to indicate that the new sentences have come in
+
+
+	//keep track of how long we can listen to the GPS
+	unsigned long ulUntil = millis() + GPS_MAX_COLLECTION_TIME;
+
+
+	while (millis() < ulUntil ) {
+		//need to continue looping even if the data isn't coming in.
+
+		//see if there's some new GPS data available
+		if (GPS.available()) {
+			byte c = GPS.read();
+
+			this->addChar(c);
+
+			//check the sentence flags to see if both RMC and GGA's have been received in this session
+			if (this->GotNewRMC() && this->GotNewGGA()) {
+				//we got new GGA and RMC strings - exit out now rather than waiting the whole alloted period.
+				return;
+			}
+		}
+	}
+
+
+	digitalWrite(this->_pinGPSEnable, LOW);    //shut the GPS back down
+
+	return;
 }
 
 void GPS::clearInputBuffer(void) {

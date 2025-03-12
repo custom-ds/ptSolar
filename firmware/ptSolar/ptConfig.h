@@ -17,84 +17,14 @@ You should have received a copy of the GNU General Public License along with thi
 
 
 #include <stdint.h>   //standard data types available, such as uint8_t
-// #include <avr/io.h>
-// #include <avr/interrupt.h>
 #include <arduino.h>
-
 #include <EEPROM.h>
 
 
+#define CONFIG_VERSION "PT0100"
 
 
 class ptConfig {
-  private:
-    // Private Variables
-
-    struct udtConfig {
-        char Callsign[7];    //6 digit callsign + Null
-        char CallsignSSID;
-        char Destination[7];
-        char DestinationSSID;    //Destination SSID
-        char Path1[7];
-        char Path1SSID;
-        char Path2[7];
-        char Path2SSID;
-      
-        unsigned int DisablePathAboveAltitude;    //the altitude to stop sending path.  If 0, then always send path defined.
-      
-        char Symbol;
-        char SymbolPage;
-      
-        byte BeaconType;    //0=seconds-delay, 1=Speed Smart Beaconing, 2=Altitude Smart Beaconing, 3=Time Slots, 4=Low-power mode
-        unsigned long BeaconSimpleDelay;
-      
-        unsigned int BeaconAltitudeThreshLow;
-        unsigned int BeaconAltitudeThreshHigh;
-        unsigned long BeaconAltitudeDelayLow;
-        unsigned long BeaconAltitudeDelayMid;
-        unsigned long BeaconAltitudeDelayHigh;
-      
-        unsigned int BeaconSpeedThreshLow;
-        unsigned int BeaconSpeedThreshHigh;
-        unsigned long BeaconSpeedDelayLow;
-        unsigned long BeaconSpeedDelayMid;
-        unsigned long BeaconSpeedDelayHigh;
-      
-        byte BeaconSlot1;
-        byte BeaconSlot2;
-      
-        byte AnnounceMode;    //0=None, 1=LED, 2=Audio, 3=LED+Audio
-      
-        byte GPSSerialBaud;    //1=300, 2=1200 3=2400 4=4800 5=9600 6=19200
-        bool GPSSerialInvert;    //Invert the incoming serial string.
-        byte GPSType;      //0=Generic NMEA, 1=UBlox, 2=ATGM332D
-      
-        char StatusMessage[41];
-        bool StatusXmitGPSFix;
-        bool StatusXmitBurstAltitude;
-        bool StatusXmitBatteryVoltage;
-        bool StatusXmitTemp;
-        bool StatusXmitPressure;
-      
-        bool StatusXmitCustom;
-        byte RadioType;
-        unsigned int RadioTxDelay;
-        bool RadioCourtesyTone;
-        char RadioFreqTx[9];
-        char RadioFreqRx[9];
-      
-        //Enable the BME280 temperature/pressure sensor
-        bool i2cBME280;
-      
-        //Beacon Type 4 Settings
-        unsigned int VoltThreshGPS;    //The voltage threshold to activate the GPS and read a position (in millivolts)
-        unsigned int VoltThreshXmit;    //The voltage threshold to transmit a packet (in millivolts)
-        unsigned int MinTimeBetweenXmits;    //The minimum time between transmissions (in seconds)
-        
-      
-        unsigned int CheckSum;    //sum of the callsign element.  If it doesn't match, then it reinitializes the EEPROM
-      } _config;
-
   // Public Functions
   public:
       // Constructor
@@ -106,6 +36,10 @@ class ptConfig {
       void setDefaultConfig();
       void writeEEPROM();
   
+      void ptConfig::readConfigParam(char *szParam, int iMaxLen);
+      bool ptConfig::getConfigFromPC();
+      void ptConfig::sendConfigToPC();
+
   
       //Getters and Setters
       char* getCallsign() { return _config.Callsign; }
@@ -246,5 +180,74 @@ class ptConfig {
       unsigned int getCheckSum() { return _config.CheckSum; }
       void setCheckSum(unsigned int sum) { _config.CheckSum = sum; }
   
+  private:
+    // Private Variables
+
+    struct udtConfig {
+        char Callsign[7];    //6 digit callsign + Null
+        char CallsignSSID;
+        char Destination[7];
+        char DestinationSSID;    //Destination SSID
+        char Path1[7];
+        char Path1SSID;
+        char Path2[7];
+        char Path2SSID;
+      
+        unsigned int DisablePathAboveAltitude;    //the altitude to stop sending path.  If 0, then always send path defined.
+      
+        char Symbol;
+        char SymbolPage;
+      
+        byte BeaconType;    //0=seconds-delay, 1=Speed Smart Beaconing, 2=Altitude Smart Beaconing, 3=Time Slots, 4=Low-power mode
+        unsigned long BeaconSimpleDelay;
+      
+        unsigned int BeaconAltitudeThreshLow;
+        unsigned int BeaconAltitudeThreshHigh;
+        unsigned long BeaconAltitudeDelayLow;
+        unsigned long BeaconAltitudeDelayMid;
+        unsigned long BeaconAltitudeDelayHigh;
+      
+        unsigned int BeaconSpeedThreshLow;
+        unsigned int BeaconSpeedThreshHigh;
+        unsigned long BeaconSpeedDelayLow;
+        unsigned long BeaconSpeedDelayMid;
+        unsigned long BeaconSpeedDelayHigh;
+      
+        byte BeaconSlot1;
+        byte BeaconSlot2;
+      
+        byte AnnounceMode;    //0=None, 1=LED, 2=Audio, 3=LED+Audio
+      
+        byte GPSSerialBaud;    //1=300, 2=1200 3=2400 4=4800 5=9600 6=19200
+        bool GPSSerialInvert;    //Invert the incoming serial string.
+        byte GPSType;      //0=Generic NMEA, 1=UBlox, 2=ATGM332D
+      
+        char StatusMessage[41];
+        bool StatusXmitGPSFix;
+        bool StatusXmitBurstAltitude;
+        bool StatusXmitBatteryVoltage;
+        bool StatusXmitTemp;
+        bool StatusXmitPressure;
+      
+        bool StatusXmitCustom;
+        byte RadioType;
+        unsigned int RadioTxDelay;
+        bool RadioCourtesyTone;
+        char RadioFreqTx[9];
+        char RadioFreqRx[9];
+      
+        //Enable the BME280 temperature/pressure sensor
+        bool i2cBME280;
+      
+        //Beacon Type 4 Settings
+        unsigned int VoltThreshGPS;    //The voltage threshold to activate the GPS and read a position (in millivolts)
+        unsigned int VoltThreshXmit;    //The voltage threshold to transmit a packet (in millivolts)
+        unsigned int MinTimeBetweenXmits;    //The minimum time between transmissions (in seconds)
+        
+      
+        unsigned int CheckSum;    //sum of the callsign element.  If it doesn't match, then it reinitializes the EEPROM
+      } _config;
+
+
 };
 #endif
