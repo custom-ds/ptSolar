@@ -545,10 +545,19 @@ void doConfigMode() {
         Tracker.annunciate('w');
       }
 
+      if (byTemp == 'P' || byTemp == 'p') {
+        //Send a test packet
+        Serial.println(F("Sending a Test Packet"));
+        Aprs.packetHeader(Config.getDestination(), Config.getDestinationSSID(), Config.getCallsign(), Config.getCallsignSSID(), Config.getPath1(), Config.getPath1SSID(), Config.getPath2(), Config.getPath2SSID(), (GPSParser.Altitude() < Config.getDisablePathAboveAltitude()));
+        Aprs.packetAppend(' ');
+        Aprs.packetAppend((char *)">Project Traveler ptSolar Flight Computer");
+        Aprs.packetSend();
+      }
+
       if (byTemp == 'T' || byTemp == 't') {
         //exercise the transmitter
         Aprs.sendTestDiagnotics();
-      }
+      }      
 
       if (byTemp == 'l' || byTemp == 'L') {
         //Do a long test of the transmitter (useful for spectrum analysis or burn-in testing)
@@ -657,9 +666,10 @@ ISR(TIMER1_COMPA_vect) {
   static uint16_t iTonePhase = 0;      //two byte variable.  The highByte contains the element in arySine that should be output'ed
   static bool bToneHigh = false;
 
+  //digitalWrite(PIN_LED, HIGH);   //Uncomment for troubleshooting ISR Timing
 
 
-  //increment the phase counter.  It will overflow automatically at > 65535
+  //Phase accumulator using high and low amplitude audio tones (twisted)
   // if (bToneHigh) {
   //   analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
   //   iTonePhase += Modem::TONE_HIGH_STEPS_PER_TICK;
@@ -668,6 +678,7 @@ ISR(TIMER1_COMPA_vect) {
   //   iTonePhase += Modem::TONE_LOW_STEPS_PER_TICK;
   // }
 
+  //increment the phase counter.  It will overflow automatically at > 65535
   analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
   if (bToneHigh) { 
     iTonePhase += Modem::TONE_HIGH_STEPS_PER_TICK;
@@ -710,5 +721,7 @@ ISR(TIMER1_COMPA_vect) {
     }
 
     iRateGen = Modem::BAUD_GENERATOR_COUNT;
+    
   }
+  //digitalWrite(PIN_LED, LOW);   //Uncomment for troubleshooting ISR Timing
 }

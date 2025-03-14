@@ -535,13 +535,20 @@ bool Modem::noBitStuffing() {
  * @brief  Configures the ISR times to create the AX.25 packet and the audio wave forms.
  */
 void Modem::configTimers() {
+  //Timer1 drives the IRQ for generating the audio frequency and baud rate.
   TCCR1A = 0x00;
   TCCR1B = 0x09;    //Set WGM12 high, and set CS=001 (which is clk/1);
   
   OCR1A = TIMER1_SEED;
 
   //Timer2 drives the PWM frequency.  We need it sufficiently higher than the 1200/2200hz tones
-  TCCR2B = 0<<CS22 | 0<<CS21 | 1<<CS20;      //sets timer2 prescaler to clk - Approx 32kHz PWM freq.
+  //TCCR2B = 0<<CS22 | 0<<CS21 | 1<<CS20;      //sets timer2 prescaler to clk - Approx 16kHz PWM freq.
+
+  //Set timer2 to fast PWM mode
+  TCCR2A = (1 << WGM20) | (1 << WGM21);
+  TCCR2B = (1 << WGM22) | (1 << CS20);    //set prescaler to clk/1
+
+  OCR2A = 0xE0;    //Overflow counter for Timer2 set to 0xe0 which delivers about 36kHz PWM frequency
 }
 
 /**
