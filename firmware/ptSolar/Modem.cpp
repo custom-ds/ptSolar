@@ -347,6 +347,36 @@ void Modem::packetSend() {
 }
 
 
+
+/**
+ * @brief  Sends a test tone to the transmitter.  This function is used to test the transmitter and the audio path.
+ */
+void Modem::sendTestDiagnotics() {
+
+
+  this->PTT(true);
+  delay(DIAGNOSTIC_DELAY);   //deadkey before starting the tones.
+
+  this->_iTxState = 11;    //set the state to 11 to indicate a constant test tone
+  this->timer1ISR(true);
+  delay(DIAGNOSTIC_DELAY);
+
+  //Change to the high tone
+  this->_iTxState = 12;    //temporarily set the state to 12 to flip the tone to the opposite.
+  delay(DIAGNOSTIC_DELAY);
+
+  //Alternate the tones
+  this->_iTxState = 13;    //set the state to 11 to indicate a constant test tone
+  delay(DIAGNOSTIC_DELAY);
+
+  this->timer1ISR(false);   //stop the tones
+  this->_iTxState = 0;
+  delay(DIAGNOSTIC_DELAY);   //dead key for a little bit
+
+  this->PTT(false);   //shut down the transmitter
+}
+
+
 /**
  * @brief  Calculates the CRC Checksums for the AX.25 packet.
  * @param  iBit: The bit to calculate the CRC for.
@@ -465,7 +495,22 @@ uint8_t Modem::getNextBit(void) {
     this->PTT(false);
   
     break;
-    
+  
+  case 11:
+    //Send a constant tone
+    this->_bNoStuffing = true;
+    bOut = 1;    //send high which means stay with whatever tone was used last
+    break;
+  case 12:
+    //swap the tone
+    bOut = 0;    //swap the tone
+    this->_iTxState = 11;    //After it's been swapped, go back to the constant tone
+    break;
+  case 13:
+    //alternate the tones
+    bOut = 0;    //send a low, which means switch between high and low tones repeatedly
+    break;
+
   default:
     bOut = 2;
   }
@@ -479,8 +524,8 @@ uint8_t Modem::getNextBit(void) {
  * @return A boolean indicating whether or not to stuff an extra bit into the packet.
  * @note  This function is called from the ISR routine.  It must be public for now.
  */
-boolean Modem::noBitStuffing(void) {
-  return _bNoStuffing;  
+bool Modem::noBitStuffing() {
+  return this->_bNoStuffing;  
 }
 
 
@@ -489,7 +534,7 @@ boolean Modem::noBitStuffing(void) {
 /**
  * @brief  Configures the ISR times to create the AX.25 packet and the audio wave forms.
  */
-void Modem::configTimers(void) {
+void Modem::configTimers() {
   TCCR1A = 0x00;
   TCCR1B = 0x09;    //Set WGM12 high, and set CS=001 (which is clk/1);
   

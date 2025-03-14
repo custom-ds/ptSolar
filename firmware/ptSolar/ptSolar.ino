@@ -547,6 +547,11 @@ void doConfigMode() {
 
       if (byTemp == 'T' || byTemp == 't') {
         //exercise the transmitter
+        Aprs.sendTestDiagnotics();
+      }
+
+      if (byTemp == 'l' || byTemp == 'L') {
+        //Do a long test of the transmitter (useful for spectrum analysis or burn-in testing)
         Serial.println(F("Test Transmit"));
         Serial.println(F(""));
         Serial.println(F("1. - 1.5 Seconds"));
@@ -655,14 +660,19 @@ ISR(TIMER1_COMPA_vect) {
 
 
   //increment the phase counter.  It will overflow automatically at > 65535
-  if (bToneHigh) {
-    //analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
-    analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
+  // if (bToneHigh) {
+  //   analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
+  //   iTonePhase += Modem::TONE_HIGH_STEPS_PER_TICK;
+  // } else {
+  //   analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineLow + highByte(iTonePhase))));
+  //   iTonePhase += Modem::TONE_LOW_STEPS_PER_TICK;
+  // }
+
+  analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
+  if (bToneHigh) { 
     iTonePhase += Modem::TONE_HIGH_STEPS_PER_TICK;
-  } else {
-    //analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineLow + highByte(iTonePhase))));
-    analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineLow + highByte(iTonePhase))));
-    iTonePhase += Modem::TONE_LOW_STEPS_PER_TICK;
+  } else { 
+    iTonePhase += Modem::TONE_LOW_STEPS_PER_TICK; 
   }
 
   iRateGen--;

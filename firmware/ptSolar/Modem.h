@@ -38,6 +38,9 @@ You should have received a copy of the GNU General Public License along with thi
 //Maximum time to wait for a response from the radio transmitter module (in milliseconds)
 #define MAX_WAIT_TIMEOUT 2000
 
+//mS Delay when performaing dianostics test transmission
+#define DIAGNOSTIC_DELAY 5000
+
 
 //Sinewave lookup tables for high and low tones (the difference is the amplitude)
 PROGMEM const unsigned char _arySineHigh[] = {128, 131, 134, 137, 140, 144, 147, 150, 153, 156,
@@ -118,8 +121,9 @@ class Modem {
 
 	void packetSend();
 
-    uint8_t getNextBit(void);       //Called from the ISR routine. Must be public for now
-    bool noBitStuffing(void);    //Called from the ISR routine. Must be public for now
+	void sendTestDiagnotics();
+    uint8_t getNextBit();       //Called from the ISR routine. Must be public for now
+    bool noBitStuffing();    //Called from the ISR routine. Must be public for now
 
     void setTxDelay(unsigned int txDelay);
 
@@ -168,7 +172,7 @@ static void isr() {
 
     // Private Functions
     void calcCRC(uint8_t iBit);
-    void configTimers(void);
+    void configTimers();
     void timer1ISR(bool run);
 
 };
