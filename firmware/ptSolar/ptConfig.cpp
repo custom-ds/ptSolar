@@ -47,7 +47,6 @@ void ptConfig::readEEPROM() {
         //we do NOT have a match - reset the Config variables
         this->setDefaultConfig();
     }
-
 }
 /**
  * @brief  Write the default configuration to the EEPROM.
@@ -98,13 +97,12 @@ void ptConfig::setDefaultConfig() {
     this->_config.GPSType = 2;      //0=Generic NMEA, 1=UBlox, 2=ATGM332D
     this->_config.AnnounceMode = 1;
 
-    this->_config.i2cBME280 = 0;    //initialize the BME280
+    this->_config.I2cBME280 = 0;    //initialize the BME280
+    this->_config.UseGlobalFreq = 0;    //use the global frequency database based on position
 
     this->_config.VoltThreshGPS = 3500;    //3.5V
     this->_config.VoltThreshXmit = 4000;    //4.0V
     this->_config.MinTimeBetweenXmits = 30;    //30 seconds
-
-
 
     this->_config.CheckSum = 410;		//Checksum for N0CALL
 
@@ -156,8 +154,6 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
         }
       }
     }
-  
-  
     Serial.println(F("timeout"));
   }
   
@@ -181,7 +177,6 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
         Serial.println(F("Reading..."));
   
         //we have the start to a config string
-  
   
         this->readConfigParam(szParam, sizeof(szParam));    //should be PT01xx for the ptSolar
         if (strcmp(szParam, CONFIG_VERSION) != 0) {
@@ -312,9 +307,8 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
         this->readConfigParam(szParam, sizeof(this->_config.RadioFreqRx));    //Receive Frequency for DRA818
         strcpy(this->_config.RadioFreqRx, szParam);
         
-  
-  
-              //GPS Configuration
+        
+        //GPS Configuration
         this->readConfigParam(szParam, sizeof(szParam));
         this->_config.GPSSerialBaud = atoi(szParam);    //1=300, 2=1200, 3=2400, 4=4800, 5=9600, 6=19200
   
@@ -331,7 +325,11 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
   
         //BME280 Configuration
         this->readConfigParam(szParam, sizeof(szParam));
-        this->_config.i2cBME280 = szParam[0] == '1';
+        this->_config.I2cBME280 = szParam[0] == '1';
+
+        //Global Frequency
+        this->readConfigParam(szParam, sizeof(szParam));
+        this->_config.UseGlobalFreq = szParam[0] == '1';
   
         //Beacon Type 4 Configuration
         this->readConfigParam(szParam, sizeof(szParam));
@@ -340,8 +338,6 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
         this->_config.VoltThreshXmit = atoi(szParam);   //Threshold for voltage before transmitting a packet
         this->readConfigParam(szParam, sizeof(szParam));
         this->_config.MinTimeBetweenXmits = atoi(szParam);   //Minimum time between transmissions in the event we have solid voltage
-  
-  
   
         unsigned int iCheckSum = 0;
         for (int i=0; i<7; i++) {
@@ -492,7 +488,12 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
           Serial.write(0x09);
   
           //BME280 Configuration
-          if (this->_config.i2cBME280) Serial.write("1");
+          if (this->_config.I2cBME280) Serial.write("1");
+          else Serial.write("0");
+          Serial.write(0x09);
+
+          //Use Global Frequency Database
+          if (this->_config.UseGlobalFreq) Serial.write("1");
           else Serial.write("0");
           Serial.write(0x09);
   
@@ -504,7 +505,6 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
           Serial.write(0x09);
   
           Serial.print(this->_config.MinTimeBetweenXmits, DEC);
-  
-  
+
           Serial.write(0x04);      //End of string
   }

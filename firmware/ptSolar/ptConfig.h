@@ -161,8 +161,11 @@ class ptConfig {
       char* getRadioFreqRx() { return _config.RadioFreqRx; }
       void setRadioFreqRx(char* freq) { strcpy(_config.RadioFreqRx, freq); }
   
-      bool getI2cBME280() { return _config.i2cBME280; }
-      void setI2cBME280(bool i2c) { _config.i2cBME280 = i2c; }
+      bool getI2cBME280() { return _config.I2cBME280; }
+      void setI2cBME280(bool i2c) { _config.I2cBME280 = i2c; }
+
+      bool getUseGlobalFreq() { return _config.UseGlobalFreq; }
+      void setUseGlobalFreq(bool value) { _config.UseGlobalFreq = value; }
   
       unsigned int getVoltThreshGPS() { return _config.VoltThreshGPS; }
       void setVoltThreshGPS(unsigned int thresh) { _config.VoltThreshGPS = thresh; }
@@ -233,13 +236,13 @@ class ptConfig {
         char RadioFreqRx[9];
       
         //Enable the BME280 temperature/pressure sensor
-        bool i2cBME280;
+        bool I2cBME280;
+        bool UseGlobalFreq;    //Use the global frequency database based on position
       
         //Beacon Type 4 Settings
         unsigned int VoltThreshGPS;    //The voltage threshold to activate the GPS and read a position (in millivolts)
         unsigned int VoltThreshXmit;    //The voltage threshold to transmit a packet (in millivolts)
         unsigned int MinTimeBetweenXmits;    //The minimum time between transmissions (in seconds)
-        
       
         unsigned int CheckSum;    //sum of the callsign element.  If it doesn't match, then it reinitializes the EEPROM
       } _config;
