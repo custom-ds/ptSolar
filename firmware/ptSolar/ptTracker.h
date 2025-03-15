@@ -15,11 +15,8 @@ You should have received a copy of the GNU General Public License along with thi
 #ifndef ptTracker_h
 #define ptTracker_h
 
-
 #include <stdint.h>   //standard data types available, such as uint8_t
 #include <arduino.h>
-
-
 
 //Anunciator Settings
 #define DELAY_DAH 650
@@ -27,21 +24,16 @@ You should have received a copy of the GNU General Public License along with thi
 #define DELAY_GAP 150
 
 
-
-
 class ptTracker {
   public:
     // Constructor
-    ptTracker();
+    ptTracker(uint8_t pinLED, uint8_t pinPiezo, uint8_t pinBattery, uint8_t annunciateMode);
 
     // Public Functions
-    void init(uint8_t pinLED, uint8_t pinPiezo, uint8_t pinBattery, uint8_t annunciateMode);
     void annunciate(char c);
     float readBatteryVoltage(bool bSerialOut);
-
     void setAnnunciateMode(uint8_t mode) { this->_annunciateMode = mode; }
     uint8_t getAnnunciateMode() { return this->_annunciateMode; }
-
     void (*reboot) (void) = 0;    //function pointer to the reboot the Tracker
 
   private:
@@ -51,11 +43,7 @@ class ptTracker {
     uint8_t _pinBattery;
     uint8_t _annunciateMode;        //0=No annunciator, 1=LED only, 2=LED and buzzer
 
-
-
     // Private Functions
     void audioTone(int length);
-
-
 };
 #endif

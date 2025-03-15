@@ -15,14 +15,11 @@ You should have received a copy of the GNU General Public License along with thi
 #ifndef ptConfig_h
 #define ptConfig_h
 
-
 #include <stdint.h>   //standard data types available, such as uint8_t
 #include <arduino.h>
 #include <EEPROM.h>
 
-
 #define CONFIG_VERSION "PT0100"
-
 
 class ptConfig {
   // Public Functions
@@ -31,7 +28,6 @@ class ptConfig {
       ptConfig();
   
       // Public Functions
-      void init();
       void readEEPROM();
       void setDefaultConfig();
       void writeEEPROM();
@@ -247,7 +243,5 @@ class ptConfig {
       
         unsigned int CheckSum;    //sum of the callsign element.  If it doesn't match, then it reinitializes the EEPROM
       } _config;
-
-
 };
 #endif

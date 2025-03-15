@@ -19,12 +19,6 @@ Version 2.0.0 - March 9, 2025 - Major refactoring to make use of the DRA/SA818V 
 #include "Arduino.h"
 #include <SoftwareSerial.h>
 
-
-Modem::Modem(void) {
-  //Initializer
-}
-
-
 /**
  * @brief Initializes the APRS object with the pins for the transmitter and serial port.
  * @param pinEnable The pin to enable the transmitter.
@@ -33,13 +27,23 @@ Modem::Modem(void) {
  * @param pinSerialTx The pin to transmit serial data to the 818V module.
  * @param pinSerialRx The pin to receive serial data from the 818V module.
  */
-void Modem::init(uint8_t pinEnable, uint8_t pinPTT, uint8_t pinTxAudio, uint8_t pinSerialTx, uint8_t pinSerialRx) {
+Modem::Modem(uint8_t pinEnable, uint8_t pinPTT, uint8_t pinTxAudio, uint8_t pinSerialTx, uint8_t pinSerialRx) {
   this->_pinEnable = pinEnable;
   this->_pinPTT = pinPTT;
   this->_pinTxAudio = pinTxAudio;
   this->_pinSerialTx = pinSerialTx;
   this->_pinSerialRx = pinSerialRx;
-  this->_txDelay = 30;    //default to 15 if not otherwise defined.
+
+  pinMode(this->_pinEnable, OUTPUT);   //Always configure the enable pin as an output
+  pinMode(this->_pinPTT, OUTPUT);     //Always configure PTT as an output
+  pinMode(this->_pinTxAudio, INPUT);    //Configure as an input until we need it.
+
+  //Disable the transmitter until we need it.
+  digitalWrite(this->_pinPTT, LOW);    //Stop the transmit - 
+  digitalWrite(this->_pinEnable, LOW);    //disable the transmitter
+
+
+  this->_txDelay = 30;    //default to 30 if not otherwise defined.
 
   this->PTT(false);   //make sure the transmitter is unkeyed
 
@@ -58,6 +62,11 @@ void Modem::PTT(bool tx) {
   long start;
 
   if (tx) {
+    this->configTimers();   //always make sure the ISR and PWM timers are configured prior to transmitting
+
+    //Configure the analog output for the audio
+    pinMode(this->_pinTxAudio, OUTPUT);
+
     //Turn on the transmitter
     digitalWrite(this->_pinEnable, HIGH);
     
@@ -108,6 +117,9 @@ void Modem::PTT(bool tx) {
     //End of transmission. stop the PTT and shut down the transmitter
     digitalWrite(this->_pinPTT, LOW);
     digitalWrite(this->_pinEnable, LOW);
+
+    pinMode(this->_pinTxAudio, INPUT);    //Configure as an input until we need it. This will save power.
+
   }
 
 }

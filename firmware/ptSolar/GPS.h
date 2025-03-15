@@ -150,23 +150,14 @@ class GPS
 		float _fKnots;
 		float _fCourse;
 		char _szGPSDate[7];
-		
 		unsigned long _lastDecodedMillis;
     bool _outputNEMA;
-		
 		udtTime _currTime;
-		
-		
 		int _iTempPtr;
-		
 		bool _bRMCComplete;
 		bool _bGGAComplete;
-
 		bool _bGotNewRMC;
-		bool _bGotNewGGA; 
-                
+		bool _bGotNewGGA;          
 		bool _bFoundStart;
 	};
-
-
 #endif

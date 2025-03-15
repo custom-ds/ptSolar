@@ -34,6 +34,11 @@ GPS::GPS(uint8_t pinGPSRx, uint8_t pinGPSTx, uint8_t pinGPSEnable) {
 	this->_pinGPSRx = pinGPSRx;
 	this->_pinGPSTx = pinGPSTx;
 	this->_pinGPSEnable = pinGPSEnable;
+
+
+	//Set the pin modes
+	pinMode(this->_pinGPSEnable, OUTPUT);
+	digitalWrite(this->_pinGPSEnable, LOW);    //disable the GPS until we're ready
 	
 
 	

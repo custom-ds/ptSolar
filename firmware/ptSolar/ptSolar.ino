@@ -30,16 +30,13 @@ Before programming for the first time, the ATmega fuses must be set.
 #include <avr/pgmspace.h>
 
 #include "MemoryFree.h"
-#include <SoftwareSerial.h>
 
+#include "ptConfig.h"
 #include "Modem.h"
 #include "GPS.h"
 #include "ptTracker.h"
-#include "ptConfig.h"
 
 #include "SparkFunBME280.h"
-
-
 #include <Wire.h>
 
 //PD0 is Serial Port RX
@@ -67,54 +64,25 @@ Before programming for the first time, the ATmega fuses must be set.
 //PC5 is SCL
 //PC6 is reset and not available
 
-
-
 //How many MS to delay between subsequent packets (as in between GPGGA and GPRMC strings
 #define DELAY_MS_BETWEEN_XMITS 1250
-#define GPS_TIMEOUT_TIME 45000      //number of milliseconds to wait between error transmissions if the GPS fails
 #define METERS_TO_FEET 3.2808399
 
 
+ptConfig Config;                                                                        //Configuration object
+ptTracker Tracker(PIN_LED, PIN_AUDIO, PIN_ANALOG_BATTERY, Config.getAnnounceMode());    //Object that manages the board-specific functions
+GPS GPSParser(PIN_GPS_RX, PIN_GPS_TX, PIN_GPS_EN);                                      //Object that parses the GPS strings
+Modem Aprs(PIN_DRA_EN, PIN_PTT_OUT, PIN_AUDIO_OUT, PIN_DRA_TX, PIN_DRA_RX);;            //Object that assembles the packets for the TNC and transmits them
 
-
-ptConfig Config;      //Configuration object
-ptTracker Tracker;    //Object that manages the board-specific functions
-GPS GPSParser(PIN_GPS_RX, PIN_GPS_TX, PIN_GPS_EN);        //Object that parses the GPS strings
-Modem Aprs;            //Object that assembles the packets for the TNC and transmits them
-
-
+BME280 Pressure;      //BMP280 pressure/temp sensor
 
 unsigned long timeLastXmit;    //Keeps track of the timestamp of the last transmission
 unsigned long iLastErrorTxMillis;    //keep track of the timestamp of the last "lost GPS" transmission
-
 bool bHasBurst;
 float fMaxAlt;
 
 
-BME280 Pressure;      //BMP280 pressure/temp sensor
-
-
-
-
 void setup() {
-
-  //Configure the Transmitter Pins
-	pinMode(PIN_PTT_OUT, OUTPUT);
-  pinMode(PIN_DRA_EN, OUTPUT);
-  pinMode(PIN_AUDIO_OUT, OUTPUT);
-
-  //Configure the GPS Pins
-  pinMode(PIN_GPS_EN, OUTPUT);
-
-  //Shut everything down until we get booted
-  digitalWrite(PIN_PTT_OUT, LOW);    //Stop the transmit - 
-  digitalWrite(PIN_DRA_EN, LOW);    //disable the transmitter
-  digitalWrite(PIN_GPS_EN, LOW);    //disable the GPS
-
-  //Configure the Misc Pins
-  pinMode(PIN_LED, OUTPUT);
-  //pinMode(PIN_AUDIO, OUTPUT);
-  
   Serial.begin(19200);
 
   Serial.println(F("pt Flight Computer"));
@@ -128,15 +96,9 @@ void setup() {
   bHasBurst = false;
   timeLastXmit = 0;
 
-  Config.init();    //initialize the configuration object and pull the settings from EEPROM
-  
-
-
-  Tracker.init(PIN_LED, PIN_AUDIO, PIN_ANALOG_BATTERY, Config.getAnnounceMode());
   Tracker.annunciate('k');
 
-  //Configure the APRS modem with the pins to connect to the transmitter
-  Aprs.init(PIN_DRA_EN, PIN_PTT_OUT, PIN_AUDIO_OUT, PIN_DRA_TX, PIN_DRA_RX);
+  //Additional configurations for the APRS Modem
   Aprs.setDebugLevel(2);
   Aprs.setTxDelay(Config.getRadioTxDelay());
 
@@ -154,28 +116,6 @@ void setup() {
     Serial.println(F("No I2C devices to init"));
   }
   
-  
-  //Check to see if we're going into config mode
-  byte byTemp;
-  while (millis() < 5000) {
-    if (Serial.available() > 0) {
-      // read the incoming byte:
-      byTemp = Serial.read();
-
-      if (byTemp == '!') {
-        doConfigMode();
-      }
-    }
-  }
-
-
-  //Send out an initial packet announcing itself.
-  // if (Config.RadioType == 1) initDRA818();    //Configure the transmitter to correct frequency
-  // oTNC.xmitStart(Config.Destination, Config.DestinationSSID, Config.Callsign, Config.CallsignSSID, Config.Path1, Config.Path1SSID, Config.Path2, Config.Path2SSID, true);
-  // oTNC.xmitString((char *)">Project Traveler ptSolar Flight Computer v");
-  // oTNC.xmitString((char *)FIRMWARE_VERSION);
-  // oTNC.xmitString((char *)" Initializing...");
-  // oTNC.xmitEnd();
 
   //init the GPS into high altitude mode (Dynamic Model 6 – Airborne < 1g)
   GPSParser.initGPS();    //will continually retry this operation until its sucessful

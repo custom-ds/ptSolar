@@ -17,15 +17,18 @@ Version 1.0.0 - March 9, 2025 - Initial Release.
 
 #include "ptTracker.h"
 
-ptTracker::ptTracker() {
-    //Constructor
 
-}
 
-void ptTracker::init(uint8_t pinLED, uint8_t pinPiezo, uint8_t pinBattery, uint8_t annunciateMode) {
+ptTracker::ptTracker(uint8_t pinLED, uint8_t pinPiezo, uint8_t pinBattery, uint8_t annunciateMode) {
     this->_pinLED = pinLED;
     this->_pinPiezo = pinPiezo;
     this->_pinBattery = pinBattery;
+
+    //Set everything to inputs - we will set the outputs when we need them
+    pinMode(this->_pinLED, INPUT);  
+    pinMode(this->_pinPiezo, INPUT);
+    pinMode(this->_pinBattery, INPUT);
+
     this->_annunciateMode = annunciateMode;
   }
 
@@ -136,6 +139,10 @@ float ptTracker::readBatteryVoltage(bool bSerialOut) {
  */
 void ptTracker::audioTone(int length) {
 
+    //Set the pins to outputs
+    pinMode(this->_pinLED, OUTPUT);  
+    pinMode(this->_pinPiezo, OUTPUT);
+
     if (this->_annunciateMode & 0x01) {
         digitalWrite(this->_pinLED, HIGH);
     }
@@ -156,4 +163,7 @@ void ptTracker::audioTone(int length) {
         digitalWrite(this->_pinLED, LOW);
     }
 
+    //Set the pins back to inputs to save power
+    pinMode(this->_pinLED, INPUT);  
+    pinMode(this->_pinPiezo, INPUT);
 }

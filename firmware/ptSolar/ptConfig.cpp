@@ -18,13 +18,9 @@ Version 1.0.0 - March 9, 2025 - Initial Release.
 #include "ptConfig.h"
 
 ptConfig::ptConfig() {
-    //Initializer
+  this->readEEPROM();
 }
 
-void ptConfig::init() {
-    this->readEEPROM();
-
-}
 
 
 /**

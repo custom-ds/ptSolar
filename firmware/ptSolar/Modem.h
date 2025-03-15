@@ -70,7 +70,7 @@ PROGMEM const unsigned char _arySineHigh[] = {128, 131, 134, 137, 140, 144, 147,
 	79, 82, 85, 88, 91, 94, 97, 100, 103, 106,
 	109, 112, 116, 119, 122, 125};
 
-
+/*
 //Max 192 (3db down from High)
 PROGMEM const unsigned char _arySineLow[] = {128, 129, 130, 132, 133, 134, 135, 136, 137, 139,
 	140, 141, 142, 143, 144, 145, 146, 147, 149, 150,
@@ -98,35 +98,32 @@ PROGMEM const unsigned char _arySineLow[] = {128, 129, 130, 132, 133, 134, 135, 
 	99, 100, 101, 102, 103, 104, 105, 106, 107, 109,
 	110, 111, 112, 113, 114, 115, 116, 117, 119, 120,
 	121, 122, 123, 124, 126, 127};
-
+*/
 
 
 
 class Modem {
   public:
     // Constructor
-    Modem();
+    Modem(uint8_t pinEnable, uint8_t pinPTT, uint8_t pinTxAudio, uint8_t pinSerialTx, uint8_t pinSerialRx);
 
     // Public Functions
-    void init(uint8_t pinEnable, uint8_t pinPTT, uint8_t pinTxAudio, uint8_t pinSerialTx, uint8_t pinSerialRx);
     void PTT(bool tx);
-    void setDebugLevel(uint8_t level);
 
     void packetHeader(char *szDest, char destSSID, char *szCall, char callSSID, char *szPath1, char path1SSID, char *szPath2, char path2SSID, bool usePath);
-
     void packetAppend(char *sz);
     void packetAppend(char c);
     void packetAppend(float f);
     void packetAppend(long lNumToSend, bool bLeadingZero);
+    void packetSend();
 
-	void packetSend();
+    void sendTestDiagnotics();
 
-	void sendTestDiagnotics();
     uint8_t getNextBit();       //Called from the ISR routine. Must be public for now
     bool noBitStuffing();    //Called from the ISR routine. Must be public for now
 
+    void setDebugLevel(uint8_t level);
     void setTxDelay(unsigned int txDelay);
-
     uint8_t getPinTxAudio();
 
     static const uint16_t TONE_HIGH_STEPS_PER_TICK = 6001;
