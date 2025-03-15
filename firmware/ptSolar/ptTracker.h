@@ -42,6 +42,7 @@ class ptTracker {
     void setAnnunciateMode(uint8_t mode) { this->_annunciateMode = mode; }
     uint8_t getAnnunciateMode() { return this->_annunciateMode; }
 
+    void (*reboot) (void) = 0;    //function pointer to the reboot the Tracker
 
   private:
     // Private Variables

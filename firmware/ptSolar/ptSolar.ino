@@ -191,7 +191,15 @@ void loop() {
   bool bXmit;
   int iSeconds;
   unsigned long msDelay;    //calculate the number of milliseconds to delay
+  byte byTemp;
 
+  //Check to see if we have a command from the serial port to indicate that we need to enter config mode
+  if (Serial.available()) {
+    byTemp = Serial.read();
+    if (byTemp == '!') {
+      doConfigMode();
+    }
+  }
 
   battMillivolts = (unsigned long)(Tracker.readBatteryVoltage(true) * 1000);  //read the battery voltage and spit it out to the serial port
 
@@ -502,9 +510,12 @@ void doConfigMode() {
   delay(750);
   Tracker.annunciate('c');
 
-  while (byTemp != 'Q') {
+  while (true) {
+    //Endless loop. Only exit is to reboot with the 'Q'
+
     if (Serial.available()) {
       byTemp = Serial.read();
+
 
       if (byTemp == '!') {
         Serial.println(F("pt Flight Computer"));
@@ -514,29 +525,6 @@ void doConfigMode() {
         Serial.println(CONFIG_VERSION);
       }
 
-
-      if (byTemp == 'R' || byTemp == 'r') {
-        Config.readEEPROM();    //pull the configs from eeprom
-        Config.sendConfigToPC();
-      }
-
-      if (byTemp == 'W' || byTemp == 'w') {
-        //take the incoming configs and load them into the Config UDT
-
-        Serial.println(F("Entering config write mode..."));
-
-        if (Config.getConfigFromPC()) {
-          Serial.println(F("Done reading in configuration data."));
-
-          Config.writeEEPROM();
-          Serial.println(F("Written config to eeprom."));
-
-          Tracker.annunciate('w');
-        } else {
-          //something failed during the read of the config data
-          Serial.println(F("Failure to read in configuration data..."));
-        }
-      }
       
       if (byTemp == 'D' || byTemp == 'd') {
         //used to reset the tracker back to N0CALL defaults
@@ -545,19 +533,36 @@ void doConfigMode() {
         Tracker.annunciate('w');
       }
 
-      if (byTemp == 'P' || byTemp == 'p') {
-        //Send a test packet
-        Serial.println(F("Sending a Test Packet"));
-        Aprs.packetHeader(Config.getDestination(), Config.getDestinationSSID(), Config.getCallsign(), Config.getCallsignSSID(), Config.getPath1(), Config.getPath1SSID(), Config.getPath2(), Config.getPath2SSID(), (GPSParser.Altitude() < Config.getDisablePathAboveAltitude()));
-        Aprs.packetAppend(' ');
-        Aprs.packetAppend((char *)">Project Traveler ptSolar Flight Computer");
-        Aprs.packetSend();
+
+      if (byTemp == 'E' || byTemp == 'e') {
+        //exercise mode to check out all of the I/O ports
+        
+        Serial.println(F("Exercise"));
+        
+        Serial.println(F(" annun"));
+        Config.setAnnounceMode(0x03);    //temporarily set the announce mode to both
+        Tracker.annunciate('x');
+        
+        Serial.println(Tracker.readBatteryVoltage(true));
+        GPSParser.collectGPSStrings();   //check the GPS  
+  
+        double insideTemp;    //inside air temp
+        double airPressure;    //millibars
+        char status;
+  
+        airPressure = (double)Pressure.readFloatPressure();
+        airPressure = airPressure / 100;    //convert back to simple airpressure in hPa
+        insideTemp = (double)Pressure.readTempC();
+        //insideTemp = insideTemp / 100;    //convert back to decimal
+
+        if (Config.getI2cBME280()) {
+          Serial.print(F("IAT: "));
+          Serial.println(insideTemp);
+          Serial.print(F("Press: "));
+          Serial.println(airPressure);
+        }
       }
 
-      if (byTemp == 'T' || byTemp == 't') {
-        //exercise the transmitter
-        Aprs.sendTestDiagnotics();
-      }      
 
       if (byTemp == 'l' || byTemp == 'L') {
         //Do a long test of the transmitter (useful for spectrum analysis or burn-in testing)
@@ -576,8 +581,6 @@ void doConfigMode() {
 
         if (byTemp >= '1' && byTemp <= '5') {
           Aprs.setTxDelay(Config.getRadioTxDelay());
-      
-
           Tracker.annunciate('t');
           
           Aprs.PTT(true);   //configures the SA818 as part of the transmit process.
@@ -611,45 +614,59 @@ void doConfigMode() {
           Serial.println(F("Cancelling..."));
         }
       }
-      
-      if (byTemp == 'E' || byTemp == 'e') {
-        //exercise mode to check out all of the I/O ports
-        
-        Serial.println(F("Exercise"));
-        
-        Serial.println(F(" annun"));
-        Config.setAnnounceMode(0x03);    //temporarily set the announce mode to both
-        Tracker.annunciate('x');
-        
-        Serial.println(Tracker.readBatteryVoltage(true));
 
-        
-  
-        GPSParser.collectGPSStrings();   //check the GPS  
-  
-        double insideTemp;    //inside air temp
-        double airPressure;    //millibars
-        char status;
-  
-
-        airPressure = (double)Pressure.readFloatPressure();
-        airPressure = airPressure / 100;    //convert back to simple airpressure in hPa
-        insideTemp = (double)Pressure.readTempC();
-        //insideTemp = insideTemp / 100;    //convert back to decimal
-
-        if (Config.getI2cBME280()) {
-          Serial.print(F("IAT: "));
-          Serial.println(insideTemp);
-          Serial.print(F("Press: "));
-          Serial.println(airPressure);
-        }
-        
+      if (byTemp == 'P' || byTemp == 'p') {
+        //Send a test packet
+        Serial.println(F("Sending a Test Packet"));
+        Aprs.packetHeader(Config.getDestination(), Config.getDestinationSSID(), Config.getCallsign(), Config.getCallsignSSID(), Config.getPath1(), Config.getPath1SSID(), Config.getPath2(), Config.getPath2SSID(), (GPSParser.Altitude() < Config.getDisablePathAboveAltitude()));
+        Aprs.packetAppend(' ');
+        Aprs.packetAppend((char *)">Project Traveler ptSolar Flight Computer");
+        Aprs.packetSend();
       }
 
+
+      if (byTemp == 'Q' || byTemp == 'q') {
+        //Quit the config mode
+        Serial.println(F("Rebooting Tracker..."));
+        Tracker.reboot();
+      }
+
+
+      if (byTemp == 'R' || byTemp == 'r') {
+        Config.readEEPROM();    //pull the configs from eeprom
+        Config.sendConfigToPC();
+      }
+
+
+      if (byTemp == 'T' || byTemp == 't') {
+        //exercise the transmitter
+        Aprs.sendTestDiagnotics();
+      }      
+
+
+      if (byTemp == 'W' || byTemp == 'w') {
+        //take the incoming configs and load them into the Config UDT
+
+        Serial.println(F("Entering config write mode..."));
+
+        if (Config.getConfigFromPC()) {
+          Serial.println(F("Done reading in configuration data."));
+
+          Config.writeEEPROM();
+          Serial.println(F("Written config to eeprom."));
+
+          Tracker.annunciate('w');
+        } else {
+          //something failed during the read of the config data
+          Serial.println(F("Failure to read in configuration data..."));
+        }
+      }
+
+      
+      Serial.println("");
       Serial.print(CONFIG_PROMPT);
     }
   }
-  Serial.println(F("Exiting config mode..."));
 }
 
 
