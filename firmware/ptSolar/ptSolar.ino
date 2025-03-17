@@ -559,7 +559,6 @@ void doConfigMode() {
         //Send a test packet
         Serial.println(F("Sending a Test Packet"));
         Aprs.packetHeader(Config.getDestination(), Config.getDestinationSSID(), Config.getCallsign(), Config.getCallsignSSID(), Config.getPath1(), Config.getPath1SSID(), Config.getPath2(), Config.getPath2SSID(), (GPSParser.Altitude() < Config.getDisablePathAboveAltitude()));
-        Aprs.packetAppend(' ');
         Aprs.packetAppend((char *)">Project Traveler ptSolar Flight Computer");
         Aprs.packetSend();
       }
@@ -623,29 +622,18 @@ ISR(TIMER1_COMPA_vect) {
   static uint16_t iTonePhase = 0;      //two byte variable.  The highByte contains the element in arySine that should be output'ed
   static bool bToneHigh = false;
 
-  //digitalWrite(PIN_LED, HIGH);   //Uncomment for troubleshooting ISR Timing
+  // digitalWrite(PIN_LED, HIGH);   //Uncomment for troubleshooting ISR Timing
 
-
-  //Phase accumulator using high and low amplitude audio tones (twisted)
-  // if (bToneHigh) {
-  //   analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
-  //   iTonePhase += Modem::TONE_HIGH_STEPS_PER_TICK;
-  // } else {
-  //   analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineLow + highByte(iTonePhase))));
-  //   iTonePhase += Modem::TONE_LOW_STEPS_PER_TICK;
-  // }
 
   //increment the phase counter.  It will overflow automatically at > 65535
-  analogWrite(PIN_AUDIO_OUT, (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
   if (bToneHigh) { 
     iTonePhase += Modem::TONE_HIGH_STEPS_PER_TICK;
   } else { 
     iTonePhase += Modem::TONE_LOW_STEPS_PER_TICK; 
   }
+  OCR2B = pgm_read_byte(&arySin[highByte(iTonePhase)]);   //analogWrite to PIN PD3, directly using the OCR register
 
   iRateGen--;
-
-
   if (iRateGen == 0) {
     //it's time for the next bit
 
@@ -659,26 +647,21 @@ ISR(TIMER1_COMPA_vect) {
     } else {
       //this is just a normal bit - grab the next bit from the szString
 
-      if (Aprs.getNextBit() == 0) {
-        //we only flip the output state if we have a zero
-
-        //Flip Bit
-        bToneHigh = !bToneHigh;
-        iStuffZero = 0;
-      } else {
+      if (Aprs.getNextBit()) {
         //it's a 1, so send the same tone...
-
         iStuffZero++;      //increament the stuffing counter
 
         //if there's been 5 in a row, then we need to stuff an extra bit in, and change the tone for that one
         if (iStuffZero == 5 && !Aprs.noBitStuffing()) {
           bStuffBit = true;      //once we hit five, we let this fifth (sixth?) one go, then we set a flag to flip the tone and send a bogus extra bit next time
         }
+      } else {
+        //we only flip the output state if we have a zero
+        bToneHigh = !bToneHigh;   //Flip Bit
+        iStuffZero = 0;        
       }
     }
-
-    iRateGen = Modem::BAUD_GENERATOR_COUNT;
-    
+    iRateGen = Modem::BAUD_GENERATOR_COUNT;  
   }
   //digitalWrite(PIN_LED, LOW);   //Uncomment for troubleshooting ISR Timing
 }

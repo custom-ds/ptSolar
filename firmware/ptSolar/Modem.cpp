@@ -46,8 +46,6 @@ Modem::Modem(uint8_t pinEnable, uint8_t pinPTT, uint8_t pinTxAudio, uint8_t pinS
   this->_txDelay = 30;    //default to 30 if not otherwise defined.
 
   this->PTT(false);   //make sure the transmitter is unkeyed
-
-  this->configTimers();
 }
 
 
@@ -66,6 +64,7 @@ void Modem::PTT(bool tx) {
 
     //Configure the analog output for the audio
     pinMode(this->_pinTxAudio, OUTPUT);
+    analogWrite(this->_pinTxAudio, 128);   //Set the audio output to 128. Subsequent calls in the ISR will write directly to the OCR2B register.
 
     //Turn on the transmitter
     digitalWrite(this->_pinEnable, HIGH);
@@ -372,13 +371,16 @@ void Modem::sendTestDiagnotics() {
   this->_iTxState = 11;    //set the state to 11 to indicate a constant test tone
   this->timer1ISR(true);
   delay(DIAGNOSTIC_DELAY);
+  delay(DIAGNOSTIC_DELAY);
 
   //Change to the high tone
   this->_iTxState = 12;    //temporarily set the state to 12 to flip the tone to the opposite.
   delay(DIAGNOSTIC_DELAY);
+  delay(DIAGNOSTIC_DELAY);
 
   //Alternate the tones
   this->_iTxState = 13;    //set the state to 11 to indicate a constant test tone
+  delay(DIAGNOSTIC_DELAY);
   delay(DIAGNOSTIC_DELAY);
 
   this->timer1ISR(false);   //stop the tones
@@ -411,9 +413,9 @@ void Modem::calcCRC(uint8_t iBit) {
  * @brief  The main component of the transmitting State Machine. After a packetSend() command is sent, this function gets called repeatedly from the ISR timer routine to output the packet bit-by-bit..
  * @return The next bit in the packet to be transmitted.
  */
-uint8_t Modem::getNextBit(void) {
+uint8_t Modem::getNextBit() {
   static int iRotatePos = 0;
-  uint8_t bOut = 0;
+  uint8_t bOut = false;
   
 
   switch (_iTxState) {
@@ -549,13 +551,42 @@ bool Modem::noBitStuffing() {
 void Modem::configTimers() {
   //Timer1 drives the IRQ for generating the audio frequency and baud rate.
   TCCR1A = 0x00;
-  TCCR1B = 0x09;    //Set WGM12 high, and set CS=001 (which is clk/1);
+  TCCR1B = 0x09;    //Set WGM12 high, and set CS=001 (which is clk/1, or no prescaler);
   
-  OCR1A = TIMER1_SEED;
+  //The Overflow Control Register is a count-down timer that triggers the ISR when it reaches zero.
+  //The count down depends on the clock frequency and the prescaler.
+  //  16MHz clock with no prescaler:  666
+  //  8MHz clock with no prescaler:  333
+  //
+  // Equations:
+  //  OSC = The clock oscilator frequency in Hz. 3.3V ATMega328P is limited to 8MHz. 5.0V can go up to 16MHz.
+  //  BG =  The baud rate generator multiplier. This should be a value greater than 16, and less than about 48. Going too high could cause the 
+  //         ISR to overflow. Too a value will result in poor quality audio being generated. BG effectively sets the number of steps within the NCO.
+  //  OCR = The overflow counter value. This is the value that the timer will count down to. The lower the value, the higher the frequency. This is
+  //         different than the prescaler, but is a way to fine-tune the prescaler.
+  //
+  //  Select an appropriate BG value, then calculate the OCR value. The formula is:
+  //  OCR = OSC / (BG * 1200)     (for 1200 baud)
+  //
+  //  Then calculate the high and low tone step values for the NCO.
+  //  TONE_HIGH_STEPS_PER_TICK = (65536 * OCR * 2200) / OSC     (for 2200Hz high tone)
+  //  TONE_LOW_STEPS_PER_TICK = (65536 * OCR * 1200) / OSC      (for 1200Hz low tone)
+  //
+  //  Some values that I've used in the past:
+  //
+  //     Variable      |  16MHz  |   8MHz  |  Notes
+  //     --------------------------------------------------------------------------------------------------------------------------
+  //     OCR           |  666    |   333   |
+  //     BG            |  20     |   20    |  20 works out to be evenly divisible by 1200 producing a low error rate. Audio quality is marginal at this rate.
+  //     TONE_HIGH     |  6001   |   6001  |  These are the same value for either clock frequency as the OCR normalizes the value.
+  //     TONE_LOW      |  3273   |   3273  |
+
+
+  OCR1A = this->TIMER1_OCR;
+
+
 
   //Timer2 drives the PWM frequency.  We need it sufficiently higher than the 1200/2200hz tones
-  //TCCR2B = 0<<CS22 | 0<<CS21 | 1<<CS20;      //sets timer2 prescaler to clk - Approx 16kHz PWM freq.
-
   //Set timer2 to fast PWM mode
   TCCR2A = (1 << WGM20) | (1 << WGM21);
   TCCR2B = (1 << WGM22) | (1 << CS20);    //set prescaler to clk/1

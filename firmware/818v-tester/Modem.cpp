@@ -15,15 +15,9 @@ Version 2.0.0 - March 9, 2025 - Major refactoring to make use of the DRA/SA818V 
 
 */
 
-#include "APRS.h"
+#include "Modem.h"
 #include "Arduino.h"
 #include <SoftwareSerial.h>
-
-
-APRS::APRS(void) {
-  //Initializer
-}
-
 
 /**
  * @brief Initializes the APRS object with the pins for the transmitter and serial port.
@@ -33,17 +27,25 @@ APRS::APRS(void) {
  * @param pinSerialTx The pin to transmit serial data to the 818V module.
  * @param pinSerialRx The pin to receive serial data from the 818V module.
  */
-void APRS::init(uint8_t pinEnable, uint8_t pinPTT, uint8_t pinTxAudio, uint8_t pinSerialTx, uint8_t pinSerialRx) {
+Modem::Modem(uint8_t pinEnable, uint8_t pinPTT, uint8_t pinTxAudio, uint8_t pinSerialTx, uint8_t pinSerialRx) {
   this->_pinEnable = pinEnable;
   this->_pinPTT = pinPTT;
   this->_pinTxAudio = pinTxAudio;
   this->_pinSerialTx = pinSerialTx;
   this->_pinSerialRx = pinSerialRx;
-  this->_txDelay = 30;    //default to 15 if not otherwise defined.
+
+  pinMode(this->_pinEnable, OUTPUT);   //Always configure the enable pin as an output
+  pinMode(this->_pinPTT, OUTPUT);     //Always configure PTT as an output
+  pinMode(this->_pinTxAudio, INPUT);    //Configure as an input until we need it.
+
+  //Disable the transmitter until we need it.
+  digitalWrite(this->_pinPTT, LOW);    //Stop the transmit - 
+  digitalWrite(this->_pinEnable, LOW);    //disable the transmitter
+
+
+  this->_txDelay = 30;    //default to 30 if not otherwise defined.
 
   this->PTT(false);   //make sure the transmitter is unkeyed
-
-  this->configTimers();
 }
 
 
@@ -52,12 +54,18 @@ void APRS::init(uint8_t pinEnable, uint8_t pinPTT, uint8_t pinTxAudio, uint8_t p
  * @param  tx: A boolean indicating whether or not to key up the transmitter or unkey into receive mode.
  * @notes  The configuration of the module should be done each time the chip is taken out of PowerDown mode.
  */
-void APRS::PTT(bool tx) {
+void Modem::PTT(bool tx) {
 
   char response;
   long start;
 
   if (tx) {
+    this->configTimers();   //always make sure the ISR and PWM timers are configured prior to transmitting
+
+    //Configure the analog output for the audio
+    pinMode(this->_pinTxAudio, OUTPUT);
+    analogWrite(this->_pinTxAudio, 128);   //Set the audio output to 128. Subsequent calls in the ISR will write directly to the OCR2B register.
+
     //Turn on the transmitter
     digitalWrite(this->_pinEnable, HIGH);
     
@@ -108,6 +116,9 @@ void APRS::PTT(bool tx) {
     //End of transmission. stop the PTT and shut down the transmitter
     digitalWrite(this->_pinPTT, LOW);
     digitalWrite(this->_pinEnable, LOW);
+
+    pinMode(this->_pinTxAudio, INPUT);    //Configure as an input until we need it. This will save power.
+
   }
 
 }
@@ -116,7 +127,7 @@ void APRS::PTT(bool tx) {
  * @brief  Sets the debug level for the APRS object.
  * @param  level: The debug level to set. 0=none, 1=Normal Serial.printlns, 2=Verbose feedback from 818V module
  */
-void APRS::setDebugLevel(uint8_t level) {
+void Modem::setDebugLevel(uint8_t level) {
   this->_debugLevel = level;
 }
 
@@ -136,7 +147,7 @@ void APRS::setDebugLevel(uint8_t level) {
  * @param bUsePath A boolean indicating whether or not to use the path information
  * @note  This function is called to start the transmission of a packet.  It will start the timer and begin the process of transmitting the packet.  Calling this function indicates that the packet is ready to be transmitted.  The packet will be transmitted in the background, and the function will return immediately.
  */
-void APRS::packetHeader(char *szDest, char destSSID, char *szCall, char callSSID, char *szPath1, char path1SSID, char *szPath2, char path2SSID, bool bUsePath) {
+void Modem::packetHeader(char *szDest, char destSSID, char *szCall, char callSSID, char *szPath1, char path1SSID, char *szPath2, char path2SSID, bool bUsePath) {
 
   uint8_t i;
   
@@ -194,7 +205,7 @@ void APRS::packetHeader(char *szDest, char destSSID, char *szCall, char callSSID
  * @brief Appends a string to the packet buffer.  This function will append the string to the packet buffer, and the packet will be transmitted when the packetSend() function is called.
  * @param sz The string to append to the packet buffer.
  */
-void APRS::packetAppend(char *sz) {
+void Modem::packetAppend(char *sz) {
   while (*sz != 0) {
     this->packetAppend(*sz);
     sz++;
@@ -206,7 +217,7 @@ void APRS::packetAppend(char *sz) {
  * @brief Appends a character to the packet buffer.  This function will append the character to the packet buffer, and the packet will be transmitted when the packetSend() function is called.
  * @param c The character to append to the packet buffer.
  */
-void APRS::packetAppend(char c) {
+void Modem::packetAppend(char c) {
   if (_iSZLen < (MAX_SZXMIT_SIZE - 2)) {
     //we still have room in the array
     _szXmit[++_iSZLen] = c;
@@ -219,7 +230,7 @@ void APRS::packetAppend(char c) {
  * @brief Appends a float to the packet buffer.  This function will append the float to the packet buffer, and the packet will be transmitted when the packetSend() function is called.
  * @param f The float to append to the packet buffer.
  */
-void APRS::packetAppend(float f) {
+void Modem::packetAppend(float f) {
   //prints a float to the TNC, with a single decimal point of resolution.  Sufficient for voltages and temperatures.
   
   if (f < 0) {
@@ -240,7 +251,7 @@ void APRS::packetAppend(float f) {
  * @param lNumToSend The long to append to the packet buffer.
  * @param bLeadingZero A boolean indicating whether or not to pad the number with leading zeros.
  */
-void APRS::packetAppend(long lNumToSend, bool bLeadingZero) {
+void Modem::packetAppend(long lNumToSend, bool bLeadingZero) {
 //This function writes a long numeric data type to the packet, zero padded to 6 digits (for the /A= Altitude report
   int iCnt = 0;
   
@@ -323,7 +334,7 @@ void APRS::packetAppend(long lNumToSend, bool bLeadingZero) {
  * @brief This function is called to start the transmission of a packet.  It will start the timer and begin the process of transmitting the packet.
  * @note  Calling this function indicates that the packet is ready to be transmitted.  For internally modulated signals (not KISS), the signal will transmit through the timer ISR, but this function will wait until it's finished to return.
  */
-void APRS::packetSend() {
+void Modem::packetSend() {
 
   //Initialize the state machine
   _iTxState = 0;
@@ -347,11 +358,44 @@ void APRS::packetSend() {
 }
 
 
+
+/**
+ * @brief  Sends a test tone to the transmitter.  This function is used to test the transmitter and the audio path.
+ */
+void Modem::sendTestDiagnotics() {
+
+
+  this->PTT(true);
+  delay(DIAGNOSTIC_DELAY);   //deadkey before starting the tones.
+
+  this->_iTxState = 11;    //set the state to 11 to indicate a constant test tone
+  this->timer1ISR(true);
+  delay(DIAGNOSTIC_DELAY);
+  delay(DIAGNOSTIC_DELAY);
+
+  //Change to the high tone
+  this->_iTxState = 12;    //temporarily set the state to 12 to flip the tone to the opposite.
+  delay(DIAGNOSTIC_DELAY);
+  delay(DIAGNOSTIC_DELAY);
+
+  //Alternate the tones
+  this->_iTxState = 13;    //set the state to 11 to indicate a constant test tone
+  delay(DIAGNOSTIC_DELAY);
+  delay(DIAGNOSTIC_DELAY);
+
+  this->timer1ISR(false);   //stop the tones
+  this->_iTxState = 0;
+  delay(DIAGNOSTIC_DELAY);   //dead key for a little bit
+
+  this->PTT(false);   //shut down the transmitter
+}
+
+
 /**
  * @brief  Calculates the CRC Checksums for the AX.25 packet.
  * @param  iBit: The bit to calculate the CRC for.
  */
-void APRS::calcCRC(uint8_t iBit) {
+void Modem::calcCRC(uint8_t iBit) {
   unsigned int xor_int;
   
   //iBit = iBit & 0x01;    //strip of all but LSB
@@ -369,9 +413,9 @@ void APRS::calcCRC(uint8_t iBit) {
  * @brief  The main component of the transmitting State Machine. After a packetSend() command is sent, this function gets called repeatedly from the ISR timer routine to output the packet bit-by-bit..
  * @return The next bit in the packet to be transmitted.
  */
-uint8_t APRS::getNextBit(void) {
+uint8_t Modem::getNextBit() {
   static int iRotatePos = 0;
-  uint8_t bOut = 0;
+  uint8_t bOut = false;
   
 
   switch (_iTxState) {
@@ -465,7 +509,22 @@ uint8_t APRS::getNextBit(void) {
     this->PTT(false);
   
     break;
-    
+  
+  case 11:
+    //Send a constant tone
+    this->_bNoStuffing = true;
+    bOut = 1;    //send high which means stay with whatever tone was used last
+    break;
+  case 12:
+    //swap the tone
+    bOut = 0;    //swap the tone
+    this->_iTxState = 11;    //After it's been swapped, go back to the constant tone
+    break;
+  case 13:
+    //alternate the tones
+    bOut = 0;    //send a low, which means switch between high and low tones repeatedly
+    break;
+
   default:
     bOut = 2;
   }
@@ -479,8 +538,8 @@ uint8_t APRS::getNextBit(void) {
  * @return A boolean indicating whether or not to stuff an extra bit into the packet.
  * @note  This function is called from the ISR routine.  It must be public for now.
  */
-boolean APRS::noBitStuffing(void) {
-  return _bNoStuffing;  
+bool Modem::noBitStuffing() {
+  return this->_bNoStuffing;  
 }
 
 
@@ -489,21 +548,57 @@ boolean APRS::noBitStuffing(void) {
 /**
  * @brief  Configures the ISR times to create the AX.25 packet and the audio wave forms.
  */
-void APRS::configTimers(void) {
+void Modem::configTimers() {
+  //Timer1 drives the IRQ for generating the audio frequency and baud rate.
   TCCR1A = 0x00;
-  TCCR1B = 0x09;    //Set WGM12 high, and set CS=001 (which is clk/1);
+  TCCR1B = 0x09;    //Set WGM12 high, and set CS=001 (which is clk/1, or no prescaler);
   
-  OCR1A = TIMER1_SEED;
+  //The Overflow Control Register is a count-down timer that triggers the ISR when it reaches zero.
+  //The count down depends on the clock frequency and the prescaler.
+  //  16MHz clock with no prescaler:  666
+  //  8MHz clock with no prescaler:  333
+  //
+  // Equations:
+  //  OSC = The clock oscilator frequency in Hz. 3.3V ATMega328P is limited to 8MHz. 5.0V can go up to 16MHz.
+  //  BG =  The baud rate generator multiplier. This should be a value greater than 16, and less than about 48. Going too high could cause the 
+  //         ISR to overflow. Too a value will result in poor quality audio being generated. BG effectively sets the number of steps within the NCO.
+  //  OCR = The overflow counter value. This is the value that the timer will count down to. The lower the value, the higher the frequency. This is
+  //         different than the prescaler, but is a way to fine-tune the prescaler.
+  //
+  //  Select an appropriate BG value, then calculate the OCR value. The formula is:
+  //  OCR = OSC / (BG * 1200)     (for 1200 baud)
+  //
+  //  Then calculate the high and low tone step values for the NCO.
+  //  TONE_HIGH_STEPS_PER_TICK = (65536 * OCR * 2200) / OSC     (for 2200Hz high tone)
+  //  TONE_LOW_STEPS_PER_TICK = (65536 * OCR * 1200) / OSC      (for 1200Hz low tone)
+  //
+  //  Some values that I've used in the past:
+  //
+  //     Variable      |  16MHz  |   8MHz  |  Notes
+  //     --------------------------------------------------------------------------------------------------------------------------
+  //     OCR           |  666    |   333   |
+  //     BG            |  20     |   20    |  20 works out to be evenly divisible by 1200 producing a low error rate. Audio quality is marginal at this rate.
+  //     TONE_HIGH     |  6001   |   6001  |  These are the same value for either clock frequency as the OCR normalizes the value.
+  //     TONE_LOW      |  3273   |   3273  |
+
+
+  OCR1A = this->TIMER1_OCR;
+
+
 
   //Timer2 drives the PWM frequency.  We need it sufficiently higher than the 1200/2200hz tones
-  TCCR2B = 0<<CS22 | 0<<CS21 | 1<<CS20;      //sets timer2 prescaler to clk - Approx 32kHz PWM freq.
+  //Set timer2 to fast PWM mode
+  TCCR2A = (1 << WGM20) | (1 << WGM21);
+  TCCR2B = (1 << WGM22) | (1 << CS20);    //set prescaler to clk/1
+
+  OCR2A = 0xE0;    //Overflow counter for Timer2 set to 0xe0 which delivers about 36kHz PWM frequency
 }
 
 /**
  * @brief  Starts and stops the Timer1 ISR routine.
  * @param  run: A boolean indicating to either start or stop the ISR routine.
  */
-void APRS::timer1ISR(bool run) {
+void Modem::timer1ISR(bool run) {
   if (run) sbi(TIMSK1, OCIE1A);
   else cbi(TIMSK1, OCIE1A);
 }
@@ -513,7 +608,7 @@ void APRS::timer1ISR(bool run) {
  * @brief  Sets the delay between the end of the packet and the transmitter being unkeyed.
  * @param  txDelay: The number of bytes to cycle through before the packet is transmitted.
  */
-void APRS::setTxDelay(unsigned int txDelay) {
+void Modem::setTxDelay(unsigned int txDelay) {
   _txDelay = txDelay;
 }
 
@@ -522,7 +617,7 @@ void APRS::setTxDelay(unsigned int txDelay) {
  * @brief  Returns the pin number for the PTT line.
  * @return The pin number for the PTT line.
  */
-uint8_t APRS::getPinTxAudio() {
+uint8_t Modem::getPinTxAudio() {
   return this->_pinTxAudio;
 }
 
@@ -550,10 +645,10 @@ void handleInterrupt() {
 
   //increment the phase counter.  It will overflow automatically at > 65535
   if (bToneHigh) {
-    analogWrite(APRS::instance->getPinTxAudio(), (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
+    analogWrite(Modem::instance->getPinTxAudio(), (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
     iTonePhase += TONE_HIGH_STEPS_PER_TICK;
   } else {
-    analogWrite(APRS::instance->getPinTxAudio(), (pgm_read_byte_near(_arySineLow + highByte(iTonePhase))));
+    analogWrite(Modem::instance->getPinTxAudio(), (pgm_read_byte_near(_arySineLow + highByte(iTonePhase))));
     iTonePhase += TONE_LOW_STEPS_PER_TICK;
   }
 
@@ -573,7 +668,7 @@ void handleInterrupt() {
     } else {
       //this is just a normal bit - grab the next bit from the szString
 
-      if (APRS::instance->getNextBit() == 0) {
+      if (Modem::instance->getNextBit() == 0) {
         //we only flip the output state if we have a zero
 
         //Flip Bit
@@ -585,7 +680,7 @@ void handleInterrupt() {
         iStuffZero++;      //increament the stuffing counter
 
         //if there's been 5 in a row, then we need to stuff an extra bit in, and change the tone for that one
-        if (iStuffZero == 5 && !APRS::instance->noBitStuffing()) {
+        if (iStuffZero == 5 && !Modem::instance->noBitStuffing()) {
           bStuffBit = true;      //once we hit five, we let this fifth (sixth?) one go, then we set a flag to flip the tone and send a bogus extra bit next time
         }
       }
