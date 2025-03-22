@@ -631,7 +631,8 @@ ISR(TIMER1_COMPA_vect) {
   } else { 
     iTonePhase += Modem::TONE_LOW_STEPS_PER_TICK; 
   }
-  OCR2B = pgm_read_byte(&arySin[highByte(iTonePhase)]);   //analogWrite to PIN PD3, directly using the OCR register
+
+  OCR2B = Aprs.getDACValue(highByte(iTonePhase));   //analogWrite to PIN PD3, directly using the OCR register
 
   iRateGen--;
   if (iRateGen == 0) {

@@ -591,7 +591,7 @@ void Modem::configTimers() {
   TCCR2A = (1 << WGM20) | (1 << WGM21);
   TCCR2B = (1 << WGM22) | (1 << CS20);    //set prescaler to clk/1
 
-  OCR2A = 0xE0;    //Overflow counter for Timer2 set to 0xe0 which delivers about 36kHz PWM frequency
+  OCR2A = 0xc8;    //Overflow counter for Timer2 set to 0xe0 which delivers about 36kHz PWM frequency
 }
 
 /**
@@ -621,6 +621,47 @@ uint8_t Modem::getPinTxAudio() {
   return this->_pinTxAudio;
 }
 
+uint8_t Modem::getDACValue(uint8_t iPhase) {
+
+  //use the Excel spreadsheet to generate the 1/4 sine wave table.  This is the first 1/4 of the sine wave, then we mirror it for the other 3/4 of the wave.
+  //The maxium value that can be passed in is 255, but is limited by the Overflow Counter Register (OCR2A). If you exceed the OCR2A value, the resulting
+  //waveform will be clipped.
+  uint8_t arySin[] = {2, 5, 7, 10, 12, 15, 17, 20, 22, 24, 
+    27, 29, 31, 34, 36, 38, 41, 43, 45, 47, 
+    49, 51, 53, 56, 58, 60, 62, 63, 65, 67, 
+    69, 71, 72, 74, 76, 77, 79, 80, 82, 83, 
+    84, 86, 87, 88, 89, 90, 91, 92, 93, 94, 
+    95, 96, 96, 97, 98, 98, 99, 99, 99, 100, 
+    100, 100, 100, 100};
+    
+    //the reference value for the sine wave.  This is the center of the wave.
+    uint8_t ref = 100;
+    
+    
+
+  if (iPhase < 128) {
+    //first half of the sine wave
+    if (iPhase < 64) {
+      //first quarter of the sine wave
+      return arySin[iPhase] + ref;
+    } else {
+      //second quarter of the sine wave
+      return arySin[iPhase-64] + ref;
+    }
+  } else {
+    //second half of the sine wave
+    if (iPhase < 192) {
+      //third quarter of the sine wave
+      return ref - arySin[iPhase-128];
+    } else {
+      //fourth quarter of the sine wave
+      return ref - arySin[iPhase-192];
+    }
+  }
+
+
+  
+}
 
 /**
  * @brief  The ISR routine for the Timer1 interrupt.  This routine is called every time the timer overflows.

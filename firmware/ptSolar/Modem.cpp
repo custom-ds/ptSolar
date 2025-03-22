@@ -591,7 +591,7 @@ void Modem::configTimers() {
   TCCR2A = (1 << WGM20) | (1 << WGM21);
   TCCR2B = (1 << WGM22) | (1 << CS20);    //set prescaler to clk/1
 
-  OCR2A = 0xE0;    //Overflow counter for Timer2 set to 0xe0 which delivers about 36kHz PWM frequency
+  OCR2A = 0xc8;    //Overflow counter for Timer2 set to 0xe0 which delivers about 36kHz PWM frequency
 }
 
 /**
@@ -621,75 +621,55 @@ uint8_t Modem::getPinTxAudio() {
   return this->_pinTxAudio;
 }
 
-
 /**
- * @brief  The ISR routine for the Timer1 interrupt.  This routine is called every time the timer overflows.
- * @note  This function is called from the ISR routine.
- */
-/*
-void handleInterrupt() {
-  // Code to handle the interrupt
-  //static APRS* instance;
+  * @brief  Returns the DAC value for the given phase.  This function is used to generate the audio waveform for the transmitter.
+  * @param  iPhase: The phase of the waveform to generate in a 0-255 range.
+  * @return The DAC value for the given phase.
+  * @note  This function is used to generate the audio waveform for the transmitter.  It uses a lookup table to generate a 1/4 sine wave, and then mirrors it for the other 3/4 of the wave.
+  *         The maximum value that can be passed in is 255, but is limited by the Overflow Counter Register (OCR2A). If you exceed the OCR2A value, the resulting
+  *         waveform will be clipped.
+  */
+uint8_t Modem::getDACValue(uint8_t iPhase) {
 
-  static boolean bBaudFlip = 0;
-  static byte iStuffZero = 0;
-  static boolean bStuffBit = false;
+  //use the Excel spreadsheet to generate the 1/4 sine wave table.  This is the first 1/4 of the sine wave, then we mirror it for the other 3/4 of the wave.
+  //The maxium value that can be passed in is 255, but is limited by the Overflow Counter Register (OCR2A). If you exceed the OCR2A value, the resulting
+  //waveform will be clipped.
+  uint8_t arySin[] = {2, 5, 7, 10, 12, 15, 17, 20, 22, 24, 
+    27, 29, 31, 34, 36, 38, 41, 43, 45, 47, 
+    49, 51, 53, 56, 58, 60, 62, 63, 65, 67, 
+    69, 71, 72, 74, 76, 77, 79, 80, 82, 83, 
+    84, 86, 87, 88, 89, 90, 91, 92, 93, 94, 
+    95, 96, 96, 97, 98, 98, 99, 99, 99, 100, 
+    100, 100, 100, 100};
+    
+    //the reference value for the sine wave.  This is the center of the wave.
+    uint8_t ref = 100;
+    
+    
 
-
-  static byte iRateGen;
-  static unsigned int iTonePhase = 0;      //two byte variable.  The highByte contains the element in arySine that should be output'ed
-  static boolean bToneHigh = 0;
-
-  Serial.println("c");
-
-
-  //increment the phase counter.  It will overflow automatically at > 65535
-  if (bToneHigh) {
-    analogWrite(Modem::instance->getPinTxAudio(), (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
-    iTonePhase += TONE_HIGH_STEPS_PER_TICK;
-  } else {
-    analogWrite(Modem::instance->getPinTxAudio(), (pgm_read_byte_near(_arySineLow + highByte(iTonePhase))));
-    iTonePhase += TONE_LOW_STEPS_PER_TICK;
-  }
-
-  iRateGen--;
-
-
-  if (iRateGen == 0) {
-    //it's time for the next bit
-
-    if (bStuffBit) {
-      //we hit the stuffing counter  - we don't need to get the next bit yet, just change the tone and send one bit
-      bToneHigh = !bToneHigh;
-      iStuffZero = 0;
-
-      bStuffBit = false;    //reset this so we don't keep stuffing
-
+  if (iPhase < 128) {
+    //first half of the sine wave
+    if (iPhase < 64) {
+      //first quarter of the sine wave
+      return arySin[iPhase] + ref;
     } else {
-      //this is just a normal bit - grab the next bit from the szString
-
-      if (Modem::instance->getNextBit() == 0) {
-        //we only flip the output state if we have a zero
-
-        //Flip Bit
-        bToneHigh = !bToneHigh;
-        iStuffZero = 0;
-      } else {
-        //it's a 1, so send the same tone...
-
-        iStuffZero++;      //increament the stuffing counter
-
-        //if there's been 5 in a row, then we need to stuff an extra bit in, and change the tone for that one
-        if (iStuffZero == 5 && !Modem::instance->noBitStuffing()) {
-          bStuffBit = true;      //once we hit five, we let this fifth (sixth?) one go, then we set a flag to flip the tone and send a bogus extra bit next time
-        }
-      }
+      //second quarter of the sine wave
+      return arySin[iPhase-64] + ref;
     }
-
-    iRateGen = BAUD_GENERATOR_COUNT;
+  } else {
+    //second half of the sine wave
+    if (iPhase < 192) {
+      //third quarter of the sine wave
+      return ref - arySin[iPhase-128];
+    } else {
+      //fourth quarter of the sine wave
+      return ref - arySin[iPhase-192];
+    }
   }
+
+
+  
 }
-*/
 
 
 
