@@ -56,7 +56,7 @@ class Modem {
 
     void sendTestDiagnotics();
 
-    uint8_t getNextBit();       //Called from the ISR routine. Must be public for now
+    bool getNextBit();       //Called from the ISR routine. Must be public for now
     bool noBitStuffing();    //Called from the ISR routine. Must be public for now
 
     void setDebugLevel(uint8_t level);
@@ -84,9 +84,7 @@ class Modem {
     char _szXmit[MAX_SZXMIT_SIZE];    //array to hold the data to be transmitted
     int _iSZLen;    //Tracks the current size of the szXmit buffer  
 
-    char _transmitterType;
     unsigned int _txDelay;
-    char _courtesyTone;
     uint8_t _iSZPos = 0;    //Tracks the current byte being modulated out of the modem
     int _iTxDelayRemaining = 0;
     bool _bNoStuffing = false;
@@ -95,7 +93,7 @@ class Modem {
 
 
     // Private Functions
-    void calcCRC(uint8_t iBit);
+    void calcCRC(bool bit);
     void configTimers();
     void timer1ISR(bool run);
 

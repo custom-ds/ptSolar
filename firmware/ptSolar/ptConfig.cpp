@@ -291,7 +291,7 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
         this->_config.StatusXmitCustom = szParam[0] == '1';
   
               
-              //Radio Configuration
+        //Radio Configuration
         this->readConfigParam(szParam, sizeof(szParam));
         this->_config.RadioType = atoi(szParam);    //0=Standard Tx-only, 1=DRA818V
   

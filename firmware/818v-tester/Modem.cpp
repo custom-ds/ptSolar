@@ -337,10 +337,10 @@ void Modem::packetAppend(long lNumToSend, bool bLeadingZero) {
 void Modem::packetSend() {
 
   //Initialize the state machine
-  _iTxState = 0;
-  _iSZPos = 0;
-  _iTxDelayRemaining = _txDelay;    //start off with a txDelay parameter
-  _CRC = 0xFFFF;    //init the CRC variable
+  this->_iTxState = 0;
+  this->_iSZPos = 0;
+  this->_iTxDelayRemaining = this->_txDelay;    //start off with a txDelay parameter
+  this->_CRC = 0xFFFF;    //init the CRC variable
 
 
   //Key the transmitter
@@ -395,15 +395,14 @@ void Modem::sendTestDiagnotics() {
  * @brief  Calculates the CRC Checksums for the AX.25 packet.
  * @param  iBit: The bit to calculate the CRC for.
  */
-void Modem::calcCRC(uint8_t iBit) {
+void Modem::calcCRC(bool bit) {
   unsigned int xor_int;
   
-  //iBit = iBit & 0x01;    //strip of all but LSB
-  xor_int = _CRC ^ iBit;				// XOR lsb of CRC with the latest bit
-  _CRC >>= 1;									// Shift 16-bit CRC one bit to the right
+  xor_int = this->_CRC ^ bit;				// XOR lsb of CRC with the latest bit
+  this->_CRC >>= 1;									// Shift 16-bit CRC one bit to the right
 
   if (xor_int & 0x0001) {					// If XOR result from above has lsb set
-    _CRC ^= 0x8408;							// Shift 16-bit CRC one bit to the right
+    this->_CRC ^= 0x8408;							// Shift 16-bit CRC one bit to the right
   }
   return;
 }
@@ -413,15 +412,15 @@ void Modem::calcCRC(uint8_t iBit) {
  * @brief  The main component of the transmitting State Machine. After a packetSend() command is sent, this function gets called repeatedly from the ISR timer routine to output the packet bit-by-bit..
  * @return The next bit in the packet to be transmitted.
  */
-uint8_t Modem::getNextBit() {
+bool Modem::getNextBit() {
   static int iRotatePos = 0;
-  uint8_t bOut = false;
+  bool bOut = false;
   
 
-  switch (_iTxState) {
+  switch (this->_iTxState) {
   case 0:
-    //TX Delay transmitting flags
-    _bNoStuffing = true;
+    //Transmitting the preamble (0x7e) TXDelays flag
+    this->_bNoStuffing = true;
     bOut = ((0x7e & (1 << iRotatePos)) != 0);    //get the bit
   
     
@@ -431,17 +430,19 @@ uint8_t Modem::getNextBit() {
 
       iRotatePos = 0;
      
-      if (_iTxDelayRemaining > 0) {
+      if (this->_iTxDelayRemaining) {
         //we have more txdelays
-        _iTxDelayRemaining--;
+        this->_iTxDelayRemaining--;
       } else {
-        _iTxState = 1;    //we need to drop down to the next state
+        //We're done with the preamble, so drop down to the next state
+        this->_iTxState = 1;
       }
     }
     break;
   case 1:
     //normal packet payload
-    _bNoStuffing = false;
+    this->_bNoStuffing = true;    //we're done with the CRC, so no more bit stuffing for the end-of-packet flag
+
     bOut = ((_szXmit[_iSZPos] & (1 << iRotatePos)) != 0);    //get the bit
   
     if (iRotatePos != 7) iRotatePos++;
@@ -454,7 +455,7 @@ uint8_t Modem::getNextBit() {
         //we have more bytes
         _iSZPos++;
       } else {
-        _iTxState = 2;    //drop down and transmit the CRC bytes
+        this->_iTxState = 2;    //drop down and transmit the CRC bytes
       }
     }
     
@@ -466,42 +467,43 @@ uint8_t Modem::getNextBit() {
   case 2:  
     //Transmit the CRC Check bits (first byte)
   
-    bOut = (((lowByte(_CRC) ^ 0xff) & (1 << iRotatePos)) != 0);    //get the bit
+    bOut = (((lowByte(this->_CRC) ^ 0xff) & (1 << iRotatePos)) != 0);    //get the bit
   
     if (iRotatePos != 7) iRotatePos++;
     else {
       iRotatePos = 0;
-      _iTxState = 3;    //we need to drop down to the next state
+      this->_iTxState = 3;    //we need to drop down to the next state
     }  
     break;
   
   case 3:
     //Transmit the CRC Check bits (second byte)
-    bOut = (((highByte(_CRC) ^ 0xff) & (1 << iRotatePos)) != 0);    //get the bit
+    bOut = (((highByte(this->_CRC) ^ 0xff) & (1 << iRotatePos)) != 0);    //get the bit
   
     if (iRotatePos != 7) iRotatePos++;
     else {
       iRotatePos = 0;
-      _iTxState = 4;    //we need to drop down to the next state
+      this->_iTxState = 4;    //we need to drop down to the next state
     }  
     break;
 
   case 4:  
     //send end-of-packet flag
-  
-    _bNoStuffing = true;
+
+    this->_bNoStuffing = true;    //we're done with the CRC, so no more bit stuffing for the end-of-packet flag
+
     bOut = ((0x7e & (1 << iRotatePos)) != 0);    //get the bit
   
     if (iRotatePos != 7) iRotatePos++;
     else {
-      _iTxState = 5;    //we need to drop down to the next state
+      this->_iTxState = 5;    //we need to drop down to the next state
     } 
     break;
 
 
   case 5:
     //done - shut the transmitter down
-    bOut = 1;    //bogus bit so we have something to return.  Should be a moot point, since the ISR is shutting down.
+    bOut = true;    //bogus bit so we have something to return.  Should be a moot point, since the ISR is shutting down.
     iRotatePos = 0;    //reset to get ready for next byte
     this->timer1ISR(false);    //stop the timer
     
@@ -517,16 +519,18 @@ uint8_t Modem::getNextBit() {
     break;
   case 12:
     //swap the tone
-    bOut = 0;    //swap the tone
+    bOut = false;    //swap the tone
     this->_iTxState = 11;    //After it's been swapped, go back to the constant tone
     break;
   case 13:
     //alternate the tones
-    bOut = 0;    //send a low, which means switch between high and low tones repeatedly
+    bOut = false;    //send a low, which means switch between high and low tones repeatedly
     break;
 
   default:
-    bOut = 2;
+    //this should never happen, but if it does, set to state 5 to shut down the transmitter
+    this->_iTxState = 5;
+    bOut = true;
   }
 
   return bOut;  
@@ -609,7 +613,7 @@ void Modem::timer1ISR(bool run) {
  * @param  txDelay: The number of bytes to cycle through before the packet is transmitted.
  */
 void Modem::setTxDelay(unsigned int txDelay) {
-  _txDelay = txDelay;
+  this->_txDelay = txDelay;
 }
 
 
@@ -621,6 +625,14 @@ uint8_t Modem::getPinTxAudio() {
   return this->_pinTxAudio;
 }
 
+/**
+  * @brief  Returns the DAC value for the given phase.  This function is used to generate the audio waveform for the transmitter.
+  * @param  iPhase: The phase of the waveform to generate in a 0-255 range.
+  * @return The DAC value for the given phase.
+  * @note  This function is used to generate the audio waveform for the transmitter.  It uses a lookup table to generate a 1/4 sine wave, and then mirrors it for the other 3/4 of the wave.
+  *         The maximum value that can be passed in is 255, but is limited by the Overflow Counter Register (OCR2A). If you exceed the OCR2A value, the resulting
+  *         waveform will be clipped.
+  */
 uint8_t Modem::getDACValue(uint8_t iPhase) {
 
   //use the Excel spreadsheet to generate the 1/4 sine wave table.  This is the first 1/4 of the sine wave, then we mirror it for the other 3/4 of the wave.
@@ -662,75 +674,6 @@ uint8_t Modem::getDACValue(uint8_t iPhase) {
 
   
 }
-
-/**
- * @brief  The ISR routine for the Timer1 interrupt.  This routine is called every time the timer overflows.
- * @note  This function is called from the ISR routine.
- */
-/*
-void handleInterrupt() {
-  // Code to handle the interrupt
-  //static APRS* instance;
-
-  static boolean bBaudFlip = 0;
-  static byte iStuffZero = 0;
-  static boolean bStuffBit = false;
-
-
-  static byte iRateGen;
-  static unsigned int iTonePhase = 0;      //two byte variable.  The highByte contains the element in arySine that should be output'ed
-  static boolean bToneHigh = 0;
-
-  Serial.println("c");
-
-
-  //increment the phase counter.  It will overflow automatically at > 65535
-  if (bToneHigh) {
-    analogWrite(Modem::instance->getPinTxAudio(), (pgm_read_byte_near(_arySineHigh + highByte(iTonePhase))));
-    iTonePhase += TONE_HIGH_STEPS_PER_TICK;
-  } else {
-    analogWrite(Modem::instance->getPinTxAudio(), (pgm_read_byte_near(_arySineLow + highByte(iTonePhase))));
-    iTonePhase += TONE_LOW_STEPS_PER_TICK;
-  }
-
-  iRateGen--;
-
-
-  if (iRateGen == 0) {
-    //it's time for the next bit
-
-    if (bStuffBit) {
-      //we hit the stuffing counter  - we don't need to get the next bit yet, just change the tone and send one bit
-      bToneHigh = !bToneHigh;
-      iStuffZero = 0;
-
-      bStuffBit = false;    //reset this so we don't keep stuffing
-
-    } else {
-      //this is just a normal bit - grab the next bit from the szString
-
-      if (Modem::instance->getNextBit() == 0) {
-        //we only flip the output state if we have a zero
-
-        //Flip Bit
-        bToneHigh = !bToneHigh;
-        iStuffZero = 0;
-      } else {
-        //it's a 1, so send the same tone...
-
-        iStuffZero++;      //increament the stuffing counter
-
-        //if there's been 5 in a row, then we need to stuff an extra bit in, and change the tone for that one
-        if (iStuffZero == 5 && !Modem::instance->noBitStuffing()) {
-          bStuffBit = true;      //once we hit five, we let this fifth (sixth?) one go, then we set a flag to flip the tone and send a bogus extra bit next time
-        }
-      }
-    }
-
-    iRateGen = BAUD_GENERATOR_COUNT;
-  }
-}
-*/
 
 
 
