@@ -108,7 +108,23 @@ void Modem::PTT(bool tx) {
     } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);    
     if (this->_debugLevel ==2) Serial.println("");
     if (this->_debugLevel >0) Serial.println("End DMO Set Response.");
+    //delay(100);
+
+
+    DRA.print(F("AT+SETFILTER=1,1,1\r\n"));   //Set the filter to 0,0,0   //90% copy at 010
+
+    //Get the response:
+    start = millis();
+    do {
+      if (DRA.available()) {
+        response = DRA.read();
+        if (this->_debugLevel == 2) Serial.print(response);     //debug the output from the response
+      }
+    } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);
+    if (this->_debugLevel ==2) Serial.println("");
+    if (this->_debugLevel >0) Serial.println("End Set Filter Response.");
     delay(100);
+
 
     //Push the PTT
     digitalWrite(this->_pinPTT, HIGH);   //There's a delay of about 37mS from PTT going high to when RF is emitted.
