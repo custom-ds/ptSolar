@@ -617,7 +617,7 @@
 			(net 2 "GND")
 			(pinfunction "V-")
 			(pintype "power_out")
-			(uuid "a51ccc59-4a55-4ff7-892b-ab935663bcb2")
+			(uuid "b92e5f4e-9600-4c97-b3f5-34f77d4335ba")
 		)
 		(pad "2" thru_hole oval
 			(at 0 32.75)
@@ -628,7 +628,7 @@
 			(net 2 "GND")
 			(pinfunction "V-")
 			(pintype "power_out")
-			(uuid "a51ccc59-4a55-4ff7-892b-ab935663bcb2")
+			(uuid "aec04c9f-b14d-4af0-a04b-5bb885e10425")
 		)
 		(embedded_fonts no)
 	)
@@ -7259,7 +7259,7 @@
 			(net 2 "GND")
 			(pinfunction "V-")
 			(pintype "power_out")
-			(uuid "bf14d2b3-8258-40b9-9633-b758903fe508")
+			(uuid "8a9d4ac7-4b65-4945-92dd-d635d1767496")
 		)
 		(pad "2" thru_hole oval
 			(at 0 32.75)
@@ -7270,7 +7270,7 @@
 			(net 2 "GND")
 			(pinfunction "V-")
 			(pintype "power_out")
-			(uuid "bf14d2b3-8258-40b9-9633-b758903fe508")
+			(uuid "6bc8e4be-1215-423b-a34e-5b0b5dff6006")
 		)
 		(embedded_fonts no)
 	)
@@ -11180,7 +11180,7 @@
 			(net 2 "GND")
 			(pinfunction "Ext")
 			(pintype "passive")
-			(uuid "3a3ba1c0-6d84-4e32-8bc6-3dfc15689133")
+			(uuid "1f94703d-b64a-4fb7-81e3-41b6be93a2f5")
 		)
 		(pad "2" smd roundrect
 			(at -0.25 2.825 180)
@@ -11190,7 +11190,7 @@
 			(net 2 "GND")
 			(pinfunction "Ext")
 			(pintype "passive")
-			(uuid "3a3ba1c0-6d84-4e32-8bc6-3dfc15689133")
+			(uuid "eecbc04e-3b6a-420c-bce3-6c8a7430891c")
 		)
 		(pad "2" smd roundrect
 			(at -0.25 2.825 180)
@@ -11200,7 +11200,7 @@
 			(net 2 "GND")
 			(pinfunction "Ext")
 			(pintype "passive")
-			(uuid "3a3ba1c0-6d84-4e32-8bc6-3dfc15689133")
+			(uuid "30a22e73-f1de-478c-9061-64f486b8d9c4")
 		)
 		(embedded_fonts no)
 		(model "${KICAD9_3DMODEL_DIR}/Connector_Coaxial.3dshapes/SMA_Samtec_SMA-J-P-H-ST-EM1_EdgeMount.wrl"

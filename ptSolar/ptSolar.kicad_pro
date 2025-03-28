@@ -542,7 +542,7 @@
       "idf": "",
       "netlist": "",
       "plot": "Current/",
-      "pos_files": "",
+      "pos_files": "Current/",
       "specctra_dsn": "",
       "step": "",
       "svg": "",
@@ -626,6 +626,12 @@
           "label": "Field6",
           "name": "Field6",
           "show": false
+        },
+        {
+          "group_by": true,
+          "label": "LCSC",
+          "name": "LCSC",
+          "show": true
         }
       ],
       "filter_string": "",
