@@ -74,6 +74,9 @@ class Modem {
     // Public Functions
     void PTT(bool tx);
 
+    void setTxFrequency(char *szFreq) { strcpy(this->_szTxFreq, szFreq); }
+    void setRxFrequency(char *szFreq) { strcpy(this->_szRxFreq, szFreq); }
+
     void packetHeader(char *szDest, char destSSID, char *szCall, char callSSID, char *szPath1, char path1SSID, char *szPath2, char path2SSID, bool usePath);
     void packetAppend(char *sz);
     void packetAppend(char c);
@@ -107,6 +110,10 @@ class Modem {
     uint8_t _pinSerialRx;
 
     uint8_t _debugLevel;
+
+    char _szTxFreq[9];    //array to hold the transmit frequency
+    char _szRxFreq[9];    //array to hold the receive frequency
+
 
     char _szXmit[MAX_SZXMIT_SIZE];    //array to hold the data to be transmitted
     int _iSZLen;    //Tracks the current size of the szXmit buffer  

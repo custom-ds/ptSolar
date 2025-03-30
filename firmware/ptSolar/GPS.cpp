@@ -66,23 +66,101 @@ GPS::GPS(uint8_t pinGPSRx, uint8_t pinGPSTx, uint8_t pinGPSEnable) {
 	_outputNEMA = false;
 }
 
+
+/**
+ * @brief  Initializes the GPS module and sets it to high altitude mode.
+ * @note   The purpose of this function varies depending on which type of GPS module is being init'ed.
+ */
 void GPS::initGPS() {
 	bool bSuccess = false;
 
-	while(!bSuccess) {
-		//Tracker.annunciate('e');    //chirp
+	SoftwareSerial GPS(this->_pinGPSRx, this->_pinGPSTx, false);
+	GPS.begin(9600);
+	delay(500);
 
-		SoftwareSerial GPS(this->_pinGPSRx, this->_pinGPSTx, false);
-		GPS.begin(9600);
+	// UBlox GPS - set the GPS to high altitude mode (Dynamic Model 6 – Airborne < 1g)
+	if (this->_GPSType == 1) {
+		if (this->_debugLevel > 0) Serial.println(F("UBlox GPS Init"));
 
-		Serial.println(F("Init atgm GPS"));
+		//digitalWrite(this->_pinGPSEnable, HIGH);    //Enable the GPS		-- not currently implemented in the ublox GPS
 
-		///TODO: Need to configure the GPS receiver
 
-		return true;    
+		byte setdm6[] = {0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00,
+			0x05, 0x00, 0xFA, 0x00, 0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0xDC };
 
+		byte ackByteID = 0;
+		byte ackPacket[10];
+		
+		
+		//calculate a response checksum to verify that the config was sent correct.
+		// Construct the expected ACK packet
+		ackPacket[0] = 0xB5; // header
+		ackPacket[1] = 0x62; // header
+		ackPacket[2] = 0x05; // class
+		ackPacket[3] = 0x01; // id
+		ackPacket[4] = 0x02; // length
+		ackPacket[5] = 0x00;
+		ackPacket[6] = setdm6[2]; // ACK class
+		ackPacket[7] = setdm6[3]; // ACK id
+		ackPacket[8] = 0; // CK_A
+		ackPacket[9] = 0; // CK_B
+		
+		// Calculate the checksums
+		for (byte i=2; i<8; i++) {
+			ackPacket[8] = ackPacket[8] + ackPacket[i];
+			ackPacket[9] = ackPacket[9] + ackPacket[8];
+		}
+		
+		//send the config to the GPS
+		GPS.flush();
+		GPS.write(0xFF);
+		delay(500);
+		
+		for (byte i=0; i<44; i++) {
+			GPS.write(setdm6[i]);
+		}
+		
+		//keep track of how long we can listen to the GPS
+		unsigned long ulUntil = millis() + 3000;
+		
+		while (millis() < ulUntil ) {
+			// Test for success
+			if (ackByteID > 9) return true;    //we had all 9 bytes come back through - valid response!!!
+		
+			// Make sure data is available to read
+			if (GPS.available()) {
+				byte c = GPS.read();
+			
+				// Check that bytes arrive in sequence as per expected ACK packet
+				if (c == ackPacket[ackByteID]) {
+					ackByteID++;
+				} else {
+					ackByteID = 0; // Reset and look again, invalid order
+				}
+			}
+		}
+		//digitalWrite(this->_pinGPSEnable, LOW);    //Disable the GPS		-- not currently implemented in the ublox GPS
 	}
-	//Tracker.annunciate('i');    //double chirp for success
+
+
+	// ATGM332D GPS - set the GPS to high altitude mode and disable unnecessary NMEA sentences
+	if (this->_GPSType ==2) {
+		if (this->_debugLevel > 0) Serial.println(F("ATGM332D GPS Init"));
+
+		digitalWrite(this->_pinGPSEnable, HIGH);    //Enable the GPS
+
+		if (this->_debugLevel > 0) Serial.println(F("Enabling GGA and RMC sentences"));
+		Serial.println(F("$PCAS03,1,0,0,0,1,0,0,0,0*1E")); // turns on only $GNGGA and $GNRMC (1 sec)
+		delay(100);
+		if (this->_debugLevel > 1) Serial.println(F("Enabling airborne mode"));
+		Serial.println(F("$PCAS11,5*18")); // Airborne mode on ATM336H-5N GPS??
+		delay(100);
+
+		
+	}
+
+	GPS.end();	//close the serial port to the GPS so it doens't draw excess current
 }
 
 
@@ -121,7 +199,7 @@ void GPS::collectGPSStrings() {
 
 
 	digitalWrite(this->_pinGPSEnable, LOW);    //shut the GPS back down
-
+	GPS.end();	//close the serial port to the GPS so it doens't draw excess current
 	return;
 }
 
@@ -454,5 +532,284 @@ void GPS::getLongitude(char *sz) {
       sz[i] = 0x00;   //always null terminate the end
     }
   }
+}
+
+/**
+ * @brief   Returns the appopriate APRS frequency for the current location.  This function is used to determine the frequency to use for APRS transmissions.
+ * @param   sz: A pointer to a char array to store the frequency in.
+ * @return: None.
+ * @note    Attempts to determine the frequency based on lat/lon. If there is no valid GPS position, then the function will return the US frequency of 144.390 MHz.
+ *            If the position is over the UK, Yemen, or North Korea, a 0.000 MHz frequency is returned indicating that no transmissions should be made.
+ */
+void GPS::getAPRSFrequency(char *sz) {
+
+/*
+Frequency Table for Worldwide APRS
+
+No Transmit : UK
+No Transmit : Yemen
+No Transmit : North Korea
+144.390 MHz : North America, 
+144.390 MHz : Argentina, Colombia, Chile, 
+144.390 MHz : Indonesia, Malaysia, Singapore, Thailand
+144.525 MHz : Hong Kong
+144.575 MHz : New Zealand
+144.640 MHz : China,[12] Taiwan
+144.660 MHz : Japan
+144.800 MHz : South Africa, Europe,[13] Russia
+145.175 MHz : Australia
+145.530 MHz : Thailand
+145.570 MHz : Brazil
+145.825 MHz : International Space Station[14] and other satellites
+
+
+*/
+
+
+
+	if (this->_bFixValid == false) {
+		//we don't have a valid fix, so return the default US frequency of 144.3900 MHz
+		strcpy(sz, "144.3900");
+		return;
+	}
+
+	//Convert the latitude and longitude to an integer for comparison
+	int iLat = atoi(this->_szLatitude);
+	int iLon = atoi(this->_szLongitude);
+
+	if (this->_cLatitudeHemi == 'S') iLat = -iLat;    //convert to negative if we're in the southern hemisphere
+	if (this->_cLongitudeHemi == 'W') iLon = -iLon;    //convert to negative if we're in the western hemisphere
+
+
+	//Check the latitude and longitude to see if we're in a country that doesn't allow APRS transmissions
+	//UK - no transmissions allowed
+	if (iLat >= 49 && iLat <= 61 && iLon >= -8 && iLon <= 2) {
+		//we're in the UK - return 0.0000 MHz to indicate no transmissions
+		strcpy(sz, "000.0000");
+		if (this->_debugLevel >= 2) Serial.println(F("No-Xmit for UK"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Yemen - no transmissions allowed
+	if (iLat >= 12 && iLat <= 19 && iLon >= 42 && iLon <= 54) {
+		//we're in Yemen - return 0.0000 MHz to indicate no transmissions
+		strcpy(sz, "000.0000");
+		if (this->_debugLevel >= 2) Serial.println(F("No-Xmit for Yemen"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}		
+		return;
+	}
+
+	//North Korea - no transmissions allowed
+	if (iLat >= 37 && iLat <= 44 && iLon >= 124 && iLon <= 131) {
+		//we're in North Korea - return 0.0000 MHz to indicate no transmissions
+		strcpy(sz, "000.0000");
+		if (this->_debugLevel >= 2) Serial.println(F("No-Xmit for North Korea"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Check the minor regions that overlap with the major regions
+	//Brazil is carved out of the South America region, so we need to check for that
+	if (iLat >= -30 && iLat <= 3 && iLon >= -70 && iLon <= -33) {
+		//we're in Brazil - return 145.5700 MHz
+		strcpy(sz, "145.5700");
+		if (this->_debugLevel >= 2) Serial.println(F("Brazil"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Japan is carved out of the China region, so we need to check for that
+	if (iLat >= 30 && iLat <= 45 && iLon >= 129 && iLon <= 146) {
+		//we're in Japan - return 144.6600 MHz
+		strcpy(sz, "144.6600");
+		if (this->_debugLevel >= 2) Serial.println(F("Japan"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Thailand is carved out of the Indonesia/Philippines region, so we need to check for that
+	if (iLat >= 5 && iLat <= 21 && iLon >= 97 && iLon <= 106) {
+		//we're in Thailand - return 145.5300 MHz
+		strcpy(sz, "145.5300");
+		if (this->_debugLevel >= 2) Serial.println(F("Thailand"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Hong Kong is carved out of the China region, so we need to check for that
+	if (iLat >= 22 && iLat <= 23 && iLon >= 114 && iLon <= 115) {
+		//we're in Hong Kong - return 144.5250 MHz
+		strcpy(sz, "144.5250");
+		if (this->_debugLevel >= 2) Serial.println(F("Hong Kong"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+
+	//Starting the major regions
+	//US/Canada/Mexico - 144.3900 MHz
+	if (iLat >= 0 && iLat <= 80 && iLon >= -130 && iLon <= -34) {
+		//we're in North America - return 144.3900 MHz
+		strcpy(sz, "144.3900");
+		if (this->_debugLevel >= 2) Serial.println(F("North America"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Alaska - 144.3900 MHz
+	if (iLat >= 50 && iLat <= 80 && iLon >= -169 && iLon <= -130) {
+		//we're in Alaska - return 144.3900 MHz
+		strcpy(sz, "144.3900");
+		if (this->_debugLevel >= 2) Serial.println(F("Alaska"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Hawaii - 144.3900 MHz
+	if (iLat >= 15 && iLat <= 26 && iLon >= -165 && iLon <= -153) {
+		//we're in Hawaii - return 144.3900 MHz
+		strcpy(sz, "144.3900");
+		if (this->_debugLevel >= 2) Serial.println(F("Hawaii"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//South America - 144.3900 MHz
+	if (iLat >= -60 && iLat <= 0 && iLon >= -103 && iLon <= -33) {
+		//we're in South America - return 144.3900 MHz
+		strcpy(sz, "144.3900");
+		if (this->_debugLevel >= 2) Serial.println(F("South America"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Indonesia/Malaysia/Singapore - 144.3900 MHz
+	if (iLat >= -10 && iLat <= 20 && iLon >= 96 && iLon <= 142) {
+		//we're in Indonesia - return 144.3900 MHz
+		strcpy(sz, "144.3900");
+		if (this->_debugLevel >= 2) Serial.println(F("Indonesia"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//China/Taiwan - 144.6400 MHz
+	if (iLat >= 20 && iLat <= 52 && iLon >= 69 && iLon <= 135) {
+		//we're in China - return 144.6400 MHz
+		strcpy(sz, "144.6400");
+		if (this->_debugLevel >= 2) Serial.println(F("China"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//New Zealand - 144.5750 MHz
+	if (iLat >= -49 && iLat <= -32 && iLon >= 165 && iLon <= 178) {
+		//we're in New Zealand - return 144.5750 MHz
+		strcpy(sz, "144.5750");
+		if (this->_debugLevel >= 2) Serial.println(F("New Zealand"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Australia - 145.1750 MHz
+	if (iLat >= -45 && iLat <= -9 && iLon >= 111 && iLon <= 154) {
+		//we're in Australia - return 145.1750 MHz
+		strcpy(sz, "145.1750");
+		if (this->_debugLevel >= 2) Serial.println(F("Australia"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Europe - 144.8000 MHz
+	if (iLat >= 36 && iLat <= 73 && iLon >= -12 && iLon <= 50) {
+		//we're in Europe - return 144.8000 MHz
+		strcpy(sz, "144.8000");
+		if (this->_debugLevel >= 2) Serial.println(F("Europe"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Africa - 144.8000 MHz
+	if (iLat >= -36 && iLat <= 36 && iLon >= -21 && iLon <= 52) {
+		//we're in Africa - return 144.8000 MHz
+		strcpy(sz, "144.8000");
+		if (this->_debugLevel >= 2) Serial.println(F("Africa"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+	//Russia - 144.8000 MHz
+	if (iLat >= 52 && iLat <= 75 && iLon >= 50 && iLon <= 180) {
+		//we're in Russia - return 144.8000 MHz
+		strcpy(sz, "144.8000");
+		if (this->_debugLevel >= 2) Serial.println(F("Russia"));
+		if (this->_debugLevel >= 1) {
+			Serial.print(F("Freq: "));
+			Serial.println(sz);
+		}
+		return;
+	}
+
+
+
+	//If nothing else matched, return the ISS space station frequency of 145.8250 MHz
+	strcpy(sz, "145.8250");
+	if (this->_debugLevel >= 2) Serial.println(F("Default ISS"));
+	if (this->_debugLevel >= 1) {
+		Serial.print(F("Freq: "));
+		Serial.println(sz);
+	}
+	return;
 }
 

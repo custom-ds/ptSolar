@@ -8,6 +8,8 @@ This is a similified version of the 818V code to test the transmit functionality
 
 
 #include "Modem.h"
+#include "ptTracker.h"
+
 
 #define PIN_PTT_OUT 2     //PD2
 #define PIN_AUDIO_OUT 3   //PD3   - APRS Packet Audio
@@ -30,6 +32,7 @@ This is a similified version of the 818V code to test the transmit functionality
 
 #define DELAY_BETWEEN 400
 
+ptTracker Tracker(PIN_LED, PIN_AUDIO, PIN_ANALOG_BATTERY, 2);    //Object that manages the board-specific functions
 Modem Aprs(PIN_DRA_EN, PIN_PTT_OUT, PIN_AUDIO_OUT, PIN_DRA_TX, PIN_DRA_RX);;            //Object that assembles the packets for the TNC and transmits them
 
 
@@ -81,10 +84,16 @@ void loop() {
   Serial.println("Transmitting a APRS packets");
 
   for (int i=1;i<=10;i++) {
+
     Aprs.packetHeader(Destination, DestinationSSID, Callsign, CallsignSSID, Path1, Path1SSID, Path2, Path2SSID, true);
     Aprs.packetAppend((char *)">Project Traveler ptSolar Flight Computer ");
     Aprs.packetAppend((long)i, false);
+
+    Tracker.readBatteryVoltage(true);  //read the battery voltage before the transmission
     Aprs.packetSend();
+    //Normally seeing about 280mV of drop during the transmission with a 0.5F supercap
+    Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
+
     delay(DELAY_BETWEEN);
 
   }

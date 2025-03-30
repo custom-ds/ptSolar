@@ -93,9 +93,9 @@ void Modem::PTT(bool tx) {
     //Configure the transceiver
     if (this->_debugLevel >0) Serial.println("Sending DMO Set Group...");
     DRA.print(F("AT+DMOSETGROUP=0,"));
-    DRA.print("144.3900");
+    DRA.print(this->_szTxFreq);
     DRA.print(",");
-    DRA.print("144.3900");
+    DRA.print(this->_szRxFreq);
     DRA.print(F(",0000,4,0000\r\n"));   //No CTCSS Tx, Sql 4, No CTCSS Rx
 
     //Get the response:

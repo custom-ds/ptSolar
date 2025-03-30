@@ -118,8 +118,9 @@ void setup() {
   
 
   //init the GPS into high altitude mode (Dynamic Model 6 – Airborne < 1g)
-  GPSParser.initGPS();    //will continually retry this operation until its sucessful
+  GPSParser.initGPS();        //Initializes the GPS
   GPSParser.setDebugNEMA(true);    ///TODO: Need to pull this from Configuration
+  GPSParser.setDebugLevel(2);    //Get full verbose output from the GPS
 
   iLastErrorTxMillis = millis();      //set a starting time for the potential error messages
 }
@@ -132,6 +133,7 @@ void loop() {
   int iSeconds;
   unsigned long msDelay;    //calculate the number of milliseconds to delay
   byte byTemp;
+  char szFreq[9];    //The frequency to transmit on
 
   //Check to see if we have a command from the serial port to indicate that we need to enter config mode
   if (Serial.available()) {
@@ -297,6 +299,19 @@ void loop() {
 
 
   if (bXmit) {
+
+    //Determine the transmit/receive frequency to use
+    if (Config.getUseGlobalFreq()) {
+      //Look up the current APRS frequency from the GPS Position
+      GPSParser.getAPRSFrequency(szFreq);
+      Aprs.setTxFrequency(szFreq);    //set the frequency to transmit on
+      Aprs.setRxFrequency(szFreq);    //set the frequency to receive on
+    } else {
+      //we're supposed to use the local frequency - set it up
+      Aprs.setTxFrequency(Config.getRadioFreqTx());    //set the frequency to transmit on
+      Aprs.setRxFrequency(Config.getRadioFreqRx());    //set the frequency to receive on
+    }
+
     //we're supposed to transmit now
     sendPositionSingleLine();
 
@@ -433,7 +448,10 @@ void sendPositionSingleLine() {
   Aprs.packetAppend(' ');
   Aprs.packetAppend(Config.getStatusMessage());
 
+  Tracker.readBatteryVoltage(true);  //read the battery voltage before the transmission
   Aprs.packetSend();
+  //Normally seeing about 280mV of drop during the transmission with a 0.5F supercap
+  Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -560,7 +578,9 @@ void doConfigMode() {
         Serial.println(F("Sending a Test Packet"));
         Aprs.packetHeader(Config.getDestination(), Config.getDestinationSSID(), Config.getCallsign(), Config.getCallsignSSID(), Config.getPath1(), Config.getPath1SSID(), Config.getPath2(), Config.getPath2SSID(), (GPSParser.Altitude() < Config.getDisablePathAboveAltitude()));
         Aprs.packetAppend((char *)">Project Traveler ptSolar Flight Computer");
+        Tracker.readBatteryVoltage(true);  //read the battery voltage before the transmission
         Aprs.packetSend();
+        Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
       }
 
 

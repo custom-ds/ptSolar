@@ -123,7 +123,11 @@ class GPS
     inline unsigned long LastDecodedMillis() { return _lastDecodedMillis; }
     
     inline void setDebugNEMA(bool output) { _outputNEMA = output; }
+    void setDebugLevel(uint8_t level) { _debugLevel = level; }
+    void setGPSType(uint8_t type) { _GPSType = type; }
+
   
+    void GPS::getAPRSFrequency(char *sz);
 
 	private:
 		void parseGGA();
@@ -159,5 +163,9 @@ class GPS
 		bool _bGotNewRMC;
 		bool _bGotNewGGA;          
 		bool _bFoundStart;
+
+    uint8_t _debugLevel;
+    uint8_t _GPSType;    //0=Generic NMEA, 1=UBlox, 2=ATGM332D
+
 	};
 #endif
