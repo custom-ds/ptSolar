@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License along with thi
 #include <arduino.h>
 #include <EEPROM.h>
 
+
 #define CONFIG_VERSION "PT0100"
 
 class ptConfig {

@@ -21,7 +21,7 @@ Before programming for the first time, the ATmega fuses must be set.
 
 
 #define FIRMWARE_VERSION "0.9.0"
-#define CONFIG_PROMPT "\n# "
+#define CONFIG_PROMPT "\n\n# "
 
 
 
@@ -85,10 +85,7 @@ float fMaxAlt;
 void setup() {
   Serial.begin(19200);
 
-  Serial.println(F("pt Flight Computer"));
-
-  Serial.print(F("Firmware Version: "));
-  Serial.println(FIRMWARE_VERSION);
+  showVersion();    //show the version of the firmware that we're running
 
 
   //Init some variables
@@ -148,7 +145,6 @@ void loop() {
 
   //check to see if we have sufficient battery to run the GPS
   if (battMillivolts > Config.getVoltThreshGPS()) {
-    Serial.println(F("Batt > Threshold. Checking the GPS"));
     GPSParser.collectGPSStrings();
 
     fCurrentAlt = GPSParser.Altitude();        //get the current altitude
@@ -163,7 +159,7 @@ void loop() {
       }
     }
   } else {
-    Serial.println(F("Batt below GPS threshold."));
+    Serial.println(F("Low Batt, no GPS"));
     delay(750);   //wait for about the amount of time that we'd normally spend grabbing a GPS reading
   }
 
@@ -287,10 +283,9 @@ void loop() {
       //we've waited long enough - see if we have the power to transmit
       
       if (battMillivolts > Config.getVoltThreshXmit()) {
-        Serial.println("Transmitting");
         bXmit = true;
       } else {
-        Serial.println("Time to transmit, but still Low volts - no xmit");
+        Serial.println("Low Batt - no xmit");
       }
     }
 
@@ -299,11 +294,12 @@ void loop() {
 
 
   if (bXmit) {
+    bool bXmitPermitted = true;    //assume that we can transmit
 
     //Determine the transmit/receive frequency to use
     if (Config.getUseGlobalFreq()) {
       //Look up the current APRS frequency from the GPS Position
-      GPSParser.getAPRSFrequency(szFreq);
+      bXmitPermitted = GPSParser.getAPRSFrequency(szFreq);
       Aprs.setTxFrequency(szFreq);    //set the frequency to transmit on
       Aprs.setRxFrequency(szFreq);    //set the frequency to receive on
     } else {
@@ -313,7 +309,11 @@ void loop() {
     }
 
     //we're supposed to transmit now
-    sendPositionSingleLine();
+    if (bXmitPermitted) {
+      sendPositionSingleLine();
+    } else {
+      Serial.println(F("Xmit Prohibit"));
+    }
 
     timeLastXmit = millis();
     fMaxSpeed = 0;    //reset the max speed to check again this next cycle (Used for Speed-based smart beaconing)
@@ -327,7 +327,7 @@ void loop() {
   }
   //see if we're tracking free memory (debugging)
   #ifdef  MEMORY_FREE_H
-    Serial.print(F("Free Mem: "));
+    Serial.print(F("Mem: "));
     Serial.println(freeMemory());
   #endif  
 }
@@ -454,15 +454,23 @@ void sendPositionSingleLine() {
   Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
 }
 
+/**
+ * @brief showVersion - Displays the version of the firmware and configuration
+ * @return void
+ */
+void showVersion() {
+  Serial.println(F("pt Flight Computer"));
+  Serial.print(F("Firmware Version: "));
+  Serial.println((char *)FIRMWARE_VERSION);
+  Serial.print(F("Config Version: "));
+  Serial.println(CONFIG_VERSION);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void doConfigMode() {
   byte byTemp;
 
-  Serial.println(F("pt Flight Computer"));
-  Serial.print(F("Firmware Version: "));
-  Serial.print((char *)FIRMWARE_VERSION);
-  Serial.print(F("   Config Version: "));
-  Serial.println(CONFIG_VERSION);
+  showVersion();
   Serial.print(CONFIG_PROMPT);
 
   delay(750);
@@ -476,17 +484,13 @@ void doConfigMode() {
 
 
       if (byTemp == '!') {
-        Serial.println(F("pt Flight Computer"));
-        Serial.print(F("Firmware Version: "));
-        Serial.print((char *)FIRMWARE_VERSION);
-        Serial.print(F("   Config Version: "));
-        Serial.println(CONFIG_VERSION);
+        showVersion();
       }
 
       
       if (byTemp == 'D' || byTemp == 'd') {
         //used to reset the tracker back to N0CALL defaults
-        Serial.println(F("Reset defaults"));
+        Serial.println(F("Clear config"));
         Config.setDefaultConfig();        
         Tracker.annunciate('w');
       }
@@ -524,13 +528,12 @@ void doConfigMode() {
 
       if (byTemp == 'l' || byTemp == 'L') {
         //Do a long test of the transmitter (useful for spectrum analysis or burn-in testing)
-        Serial.println(F("Test Transmit"));
-        Serial.println(F(""));
-        Serial.println(F("1. - 1.5 Seconds"));
-        Serial.println(F("2. - 10 Seconds"));
-        Serial.println(F("3. - 30 Seconds"));
-        Serial.println(F("4. - 60 Seconds"));
-        Serial.println(F("5. - 120 Seconds"));
+        Serial.println(F("Test Xmit"));
+        Serial.println(F("\n1. - 1.5s"));
+        Serial.println(F("2. - 10s"));
+        Serial.println(F("3. - 30s"));
+        Serial.println(F("4. - 60s"));
+        Serial.println(F("5. - 120s"));
 
         while (!Serial.available()) {
           //Wait for an input
@@ -544,40 +547,38 @@ void doConfigMode() {
           Aprs.PTT(true);   //configures the SA818 as part of the transmit process.
           switch (byTemp) {
           case '1':
-            Serial.println(F("1.5 sec..."));
+            Serial.println(F("1.5s"));
             delay(1500);
             break;
           case '2':
-            Serial.println(F("10 sec..."));
+            Serial.println(F("10s"));
             delay(10000);
             break;
           case '3':
-            Serial.println(F("30 sec..."));
+            Serial.println(F("30s"));
             delay(30000);
             break;
           case '4':
-            Serial.println(F("60 sec..."));
+            Serial.println(F("60s"));
             delay(60000);
             break;
           case '5':
-            Serial.println(F("120 sec..."));
+            Serial.println(F("120s"));
             delay(120000);
             break;
           default:
-            Serial.println(F("Unknown"));
+            Serial.println(F("Unk"));
           }
 
           Aprs.PTT(false);
-        } else {
-          Serial.println(F("Cancelling..."));
         }
       }
 
       if (byTemp == 'P' || byTemp == 'p') {
         //Send a test packet
-        Serial.println(F("Sending a Test Packet"));
+        Serial.println(F("Test Packet"));
         Aprs.packetHeader(Config.getDestination(), Config.getDestinationSSID(), Config.getCallsign(), Config.getCallsignSSID(), Config.getPath1(), Config.getPath1SSID(), Config.getPath2(), Config.getPath2SSID(), (GPSParser.Altitude() < Config.getDisablePathAboveAltitude()));
-        Aprs.packetAppend((char *)">Project Traveler ptSolar Flight Computer");
+        Aprs.packetAppend((char *)">Project Traveler Test");
         Tracker.readBatteryVoltage(true);  //read the battery voltage before the transmission
         Aprs.packetSend();
         Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
@@ -586,7 +587,7 @@ void doConfigMode() {
 
       if (byTemp == 'Q' || byTemp == 'q') {
         //Quit the config mode
-        Serial.println(F("Rebooting Tracker..."));
+        Serial.println(F("Rebooting..."));
         Tracker.reboot();
       }
 
@@ -606,23 +607,21 @@ void doConfigMode() {
       if (byTemp == 'W' || byTemp == 'w') {
         //take the incoming configs and load them into the Config UDT
 
-        Serial.println(F("Entering config write mode..."));
+        Serial.println(F("Config mode..."));    //NOTE: This wording is critical for the ptConfigurator to know that we're in config mode
 
         if (Config.getConfigFromPC()) {
-          Serial.println(F("Done reading in configuration data."));
+          Serial.println(F(" loaded"));
 
           Config.writeEEPROM();
-          Serial.println(F("Written config to eeprom."));
+          Serial.println(F(" saved"));
 
           Tracker.annunciate('w');
         } else {
           //something failed during the read of the config data
-          Serial.println(F("Failure to read in configuration data..."));
+          Serial.println(F(" failed"));
         }
       }
 
-      
-      Serial.println("");
       Serial.print(CONFIG_PROMPT);
     }
   }

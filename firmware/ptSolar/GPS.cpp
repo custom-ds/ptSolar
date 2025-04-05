@@ -1,6 +1,6 @@
 /*
 GPS Data Parser for Project: Traveler Flight Controllers
-Copywrite 2011-2019 - Zack Clobes (W0ZC), Custom Digital Services, LLC
+Copywrite 2011-2025 - Zack Clobes (W0ZC), Custom Digital Services, LLC
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -21,11 +21,7 @@ Version 1.0.0 - January 15, 2015 - Finalized the basic configuration and license
 */
 
 #include "GPS.h"
-
 #include <SoftwareSerial.h>
-
-
-
 
 
 //Public Methods
@@ -35,12 +31,9 @@ GPS::GPS(uint8_t pinGPSRx, uint8_t pinGPSTx, uint8_t pinGPSEnable) {
 	this->_pinGPSTx = pinGPSTx;
 	this->_pinGPSEnable = pinGPSEnable;
 
-
 	//Set the pin modes
 	pinMode(this->_pinGPSEnable, OUTPUT);
 	digitalWrite(this->_pinGPSEnable, LOW);    //disable the GPS until we're ready
-	
-
 	
 	//Constructor - initialize the vars
 	_szTemp[0] = 0;
@@ -80,12 +73,12 @@ void GPS::initGPS() {
 
 	// UBlox GPS - set the GPS to high altitude mode (Dynamic Model 6 – Airborne < 1g)
 	if (this->_GPSType == 1) {
-		if (this->_debugLevel > 0) Serial.println(F("UBlox GPS Init"));
+		if (this->_debugLevel > 0) Serial.println(F("Init UBlox"));
 
 		//digitalWrite(this->_pinGPSEnable, HIGH);    //Enable the GPS		-- not currently implemented in the ublox GPS
 
 
-		byte setdm6[] = {0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00,
+		const byte setdm6[] = {0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00,
 			0x05, 0x00, 0xFA, 0x00, 0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0xDC };
 
@@ -146,14 +139,14 @@ void GPS::initGPS() {
 
 	// ATGM332D GPS - set the GPS to high altitude mode and disable unnecessary NMEA sentences
 	if (this->_GPSType ==2) {
-		if (this->_debugLevel > 0) Serial.println(F("ATGM332D GPS Init"));
+		if (this->_debugLevel > 0) Serial.println(F("Init ATGM332"));
 
 		digitalWrite(this->_pinGPSEnable, HIGH);    //Enable the GPS
 
-		if (this->_debugLevel > 0) Serial.println(F("Enabling GGA and RMC sentences"));
+		if (this->_debugLevel > 0) Serial.println(F("Config GGA/RMC"));
 		Serial.println(F("$PCAS03,1,0,0,0,1,0,0,0,0*1E")); // turns on only $GNGGA and $GNRMC (1 sec)
 		delay(100);
-		if (this->_debugLevel > 1) Serial.println(F("Enabling airborne mode"));
+		if (this->_debugLevel > 1) Serial.println(F("Enable air"));
 		Serial.println(F("$PCAS11,5*18")); // Airborne mode on ATM336H-5N GPS??
 		delay(100);
 
@@ -221,13 +214,13 @@ void GPS::addChar(char c) {
 		_bFoundStart = false;
 	}
 
-	if (_bFoundStart == false) {
+	if (this->_bFoundStart == false) {
 		//we are getting a new character, but we don't have a valid start to a sentence yet - see if this is a $
 		
 		if (c == '$') {
 			//we have a new sentence - start storing it to the temp var
-			_iTempPtr = 0;
-			_bFoundStart = true;
+			this->_iTempPtr = 0;
+			this->_bFoundStart = true;
 			
 			_szTemp[_iTempPtr++] = c;
 			_szTemp[_iTempPtr] = 0;			//always make sure our resulting string is null terminated
@@ -246,32 +239,32 @@ void GPS::addChar(char c) {
 			if (_szTemp[1] == 'G' && (_szTemp[2] == 'P' || _szTemp[2] == 'N') && _szTemp[3] == 'R' && _szTemp[4] == 'M' && _szTemp[5] == 'C') {
 				//we have the start of an RMC string
 
-        if (_outputNEMA) {
+        if (this->_outputNEMA) {
           Serial.println(_szTemp);
         }
-				_bRMCComplete = true;    //set a flag indicating that an RMC sentence has been received, therefore we have valid data
+				this->_bRMCComplete = true;    //set a flag indicating that an RMC sentence has been received, therefore we have valid data
 
-				parseRMC();
+				this->parseRMC();
 
-				_bGotNewRMC = true;      //set a temporary flag indicating that we got a new RMC sentence
-				_lastDecodedMillis = millis();    //keep track of the time when we last received a sentence
+				this->_bGotNewRMC = true;      //set a temporary flag indicating that we got a new RMC sentence
+				this->_lastDecodedMillis = millis();    //keep track of the time when we last received a sentence
 			
 			} else if (_szTemp[1] == 'G' && (_szTemp[2] == 'P' || _szTemp[2] == 'N') && _szTemp[3] == 'G' && _szTemp[4] == 'G' && _szTemp[5] == 'A') {
 				//we have the start of an GGA string
 
-        if (_outputNEMA) {
+        if (this->_outputNEMA) {
           Serial.println(_szTemp);
         }
-				_bGGAComplete = true;
-				parseGGA();
-				_bGotNewGGA = true;      //set a temporary flag indicating that we got a new RMC sentence
-				_lastDecodedMillis = millis();    //keep track of the time when we last received a sentence
+				this->_bGGAComplete = true;
+				this->parseGGA();
+				this->_bGotNewGGA = true;      //set a temporary flag indicating that we got a new RMC sentence
+				this->_lastDecodedMillis = millis();    //keep track of the time when we last received a sentence
 			}
 			
 			//even if we didn't find an RMC or GGA string, we still made it to the end - throw out whatever is still in szTemp
-			_szTemp[0] = 0;
-			_iTempPtr = 0;
-			_bFoundStart = false;
+			this->_szTemp[0] = 0;
+			this->_iTempPtr = 0;
+			this->_bFoundStart = false;
 			
 		} else {
 			//this is just a "normal char".  Add it to the array and quit
@@ -302,78 +295,78 @@ void GPS::parseRMC() {
 	
 	strncpy(sz, ptrTemp, 2);
 	sz[2] = 0;		//null terminate the string
-	_currTime.hh = atoi(sz);
+	this->_currTime.hh = atoi(sz);
 	ptrTemp += 2;		//incr the pointer to minutes
 	
 	strncpy(sz, ptrTemp, 2);
 	sz[2] = 0;		//null terminate the string
-	_currTime.mm = atoi(sz);
+	this->_currTime.mm = atoi(sz);
 	ptrTemp += 2;		//incre the pointer to seconds
 	
 	strncpy(sz, ptrTemp, 2);
 	sz[2] = 0;		//null terminate the string
-	_currTime.ss = atoi(sz);
+	this->_currTime.ss = atoi(sz);
 	
 	
-	ptrTemp = skipToNext(ptrTemp);			//skip thru the rest of the chars in the time
+	ptrTemp = this->skipToNext(ptrTemp);			//skip thru the rest of the chars in the time
 
 	//see if we have valid fix (A) or invalid (V)
-	getString(ptrTemp, sz, 2);
+	this->getString(ptrTemp, sz, 2);
 	if (sz[0] == 'A') {
-		_bFixValid = true;
+		this->_bFixValid = true;
 	} else {
-		_bFixValid = false;
+		this->_bFixValid = false;
 	}
-	ptrTemp = skipToNext(ptrTemp);
+	ptrTemp = this->skipToNext(ptrTemp);
 
 
 	//get the Latitude
-	getString(ptrTemp, _szLatitude, _MAX_LATITUDE_LEN);
+	this->getString(ptrTemp, _szLatitude, _MAX_LATITUDE_LEN);
   if (_szLatitude[0] == '\0') {
     //the longitude was empty
 	  strcpy(_szLatitude, "0000.0000");
   }
-	ptrTemp = skipToNext(ptrTemp);
+	ptrTemp = this->skipToNext(ptrTemp);
 
 	//get Latitude Hemisphere
-	getString(ptrTemp, sz, 2);
+	this->getString(ptrTemp, sz, 2);
 	if (sz[0] == 'S') {
-		_cLatitudeHemi = 'S';
+		this->_cLatitudeHemi = 'S';
 	} else {
-		_cLatitudeHemi = 'N';
+		this->_cLatitudeHemi = 'N';
 	}
-	ptrTemp = skipToNext(ptrTemp);
+	ptrTemp = this->skipToNext(ptrTemp);
 
 
 	//get the Longitude
-	getString(ptrTemp, _szLongitude, _MAX_LONGITUDE_LEN);
-  if (_szLongitude[0] == '\0') {
+	this->getString(ptrTemp, this->_szLongitude, _MAX_LONGITUDE_LEN);
+  if (this->_szLongitude[0] == '\0') {
     //the longitude was empty
-	  strcpy(_szLongitude, "00000.0000");
+	  strcpy(this->_szLongitude, "00000.0000");
   }
-	ptrTemp = skipToNext(ptrTemp);
+	ptrTemp = this->skipToNext(ptrTemp);
 
 	//get Latitude Hemisphere
-	getString(ptrTemp, sz, 2);
+	this->getString(ptrTemp, sz, 2);
 	if (sz[0] == 'E') {
-		_cLongitudeHemi = 'E';
+		this->_cLongitudeHemi = 'E';
 	} else {
-		_cLongitudeHemi = 'W';
+		this->_cLongitudeHemi = 'W';
 	}
-	ptrTemp = skipToNext(ptrTemp);
+	ptrTemp = this->skipToNext(ptrTemp);
 
 	//get speed in knots
-	getString(ptrTemp, sz, 6);
-	_fKnots = atof(sz);
-	ptrTemp = skipToNext(ptrTemp);
+	this->getString(ptrTemp, sz, 6);
+	this->_fKnots = atof(sz);
+	ptrTemp = this->skipToNext(ptrTemp);
 
 	//get course of track
-	getString(ptrTemp, sz, 6);
-	_fCourse = atof(sz);
-	ptrTemp = skipToNext(ptrTemp);	
+	this->getString(ptrTemp, sz, 6);
+	this->_fCourse = atof(sz);
+	ptrTemp = this->skipToNext(ptrTemp);	
 	
 	//get date
-	getString(ptrTemp, _szGPSDate, 7);
+	this->getString(ptrTemp, this->_szGPSDate, 7);
 	
 	
 }
@@ -388,74 +381,73 @@ void GPS::parseGGA() {
 	char* ptrTemp;
 	
 	ptrTemp = &_szTemp[7];			//set this pointer to the hours digit
-	//Serial.println("Parsing GGA");
 
 	
 	strncpy(sz, ptrTemp, 2);
 	sz[2] = 0;		//null terminate the string
-	_currTime.hh = atoi(sz);
+	this->_currTime.hh = atoi(sz);
 	ptrTemp += 2;		//incr the pointer to minutes
 	
 	strncpy(sz, ptrTemp, 2);
 	sz[2] = 0;		//null terminate the string
-	_currTime.mm = atoi(sz);
+	this->_currTime.mm = atoi(sz);
 	ptrTemp += 2;		//incre the pointer to seconds
 	
 	strncpy(sz, ptrTemp, 2);
 	sz[2] = 0;		//null terminate the string
-	_currTime.ss = atoi(sz);
+	this->_currTime.ss = atoi(sz);
 	
-	ptrTemp = skipToNext(ptrTemp);			//skip thru the rest of the chars in the time
+	ptrTemp = this->skipToNext(ptrTemp);			//skip thru the rest of the chars in the time
 
 	//get the Latitude
 	getString(ptrTemp, _szLatitude, _MAX_LATITUDE_LEN);
-  if (_szLatitude[0] == '\0') {
+  if (this->_szLatitude[0] == '\0') {
     //the longitude was empty
-    strcpy(_szLatitude, "0000.0000");
+    strcpy(this->_szLatitude, "0000.0000");
   }
 	ptrTemp = skipToNext(ptrTemp);
 
 	//get Latitude Hemisphere
-	getString(ptrTemp, sz, 2);
+	this->getString(ptrTemp, sz, 2);
 	if (sz[0] == 'S') {
-		_cLatitudeHemi = 'S';
+		this->_cLatitudeHemi = 'S';
 	} else {
-		_cLatitudeHemi = 'N';
+		this->_cLatitudeHemi = 'N';
 	}
 	ptrTemp = skipToNext(ptrTemp);
 
 
 	//get the Longitude
-	getString(ptrTemp, _szLongitude, _MAX_LONGITUDE_LEN);
-  if (_szLongitude[0] == '\0') {
+	this->getString(ptrTemp, this->_szLongitude, _MAX_LONGITUDE_LEN);
+  if (this->_szLongitude[0] == '\0') {
     //the longitude was empty
 	  strcpy(_szLongitude, "00000.0000");
   }
-	ptrTemp = skipToNext(ptrTemp);
+	ptrTemp = this->skipToNext(ptrTemp);
 
 	//get Latitude Hemisphere
-	getString(ptrTemp, sz, 2);
+	this->getString(ptrTemp, sz, 2);
 	if (sz[0] == 'E') {
-		_cLongitudeHemi = 'E';
+		this->_cLongitudeHemi = 'E';
 	} else {
-		_cLongitudeHemi = 'W';
+		this->_cLongitudeHemi = 'W';
 	}
-	ptrTemp = skipToNext(ptrTemp);
+	ptrTemp = this->skipToNext(ptrTemp);
 
 	//get position fix quality
-	getString(ptrTemp, sz, 2);
-	_iFixQuality = atoi(sz);
-	ptrTemp = skipToNext(ptrTemp);
+	this->getString(ptrTemp, sz, 2);
+	this->_iFixQuality = atoi(sz);
+	ptrTemp = this->skipToNext(ptrTemp);
 	
 	//get number of sats received
-	getString(ptrTemp, sz, 3);
-	_iNumSats = atoi(sz);
-	ptrTemp = skipToNext(ptrTemp);
+	this->getString(ptrTemp, sz, 3);
+	this->_iNumSats = atoi(sz);
+	ptrTemp = this->skipToNext(ptrTemp);
 	
-	ptrTemp = skipToNext(ptrTemp);		//skip over horizontal dilution
+	ptrTemp = this->skipToNext(ptrTemp);		//skip over horizontal dilution
 	
-	getString(ptrTemp, sz, 8);
-	_fAltitude = atof(sz);
+	this->getString(ptrTemp, sz, 8);
+	this->_fAltitude = atof(sz);
 }
 
 
@@ -498,7 +490,7 @@ bool GPS::validateGPSSentence(char *szGPSSentence, int iNumCommas, int iMinLengt
 
 char* GPS::skipToNext(char *ptr) {
 	//takes a pointer, advances through until it either hits a null or gets past the next comma
-	//ptr++;		//we always have to advance at least once
+
 	while (*ptr != ',' && *ptr != '\0') {
 		//just a char - incr to the next one
 		ptr++;	
@@ -512,9 +504,9 @@ void GPS::getLatitude(char *sz) {
   byte i = 0;
   sz[0] = 0x00;   //always make sure we return null if no valid data in the source
 
-  if (_bGGAComplete || _bRMCComplete) {
-    while(_szLatitude[i] > 0x00 && i < _MAX_LATITUDE_LEN) {
-      sz[i] = _szLatitude[i];
+  if (this->_bGGAComplete || this->_bRMCComplete) {
+    while(this->_szLatitude[i] > 0x00 && i < _MAX_LATITUDE_LEN) {
+      sz[i] = this->_szLatitude[i];
       i++;
       sz[i] = 0x00;   //always null terminate the end
     }
@@ -525,9 +517,9 @@ void GPS::getLongitude(char *sz) {
   byte i = 0;
   sz[0] = 0x00;   //always make sure we return null if no valid data in the source
 
-  if (_bGGAComplete || _bRMCComplete) {
-    while(_szLongitude[i] > 0x00 && i < _MAX_LONGITUDE_LEN) {
-      sz[i] = _szLongitude[i];
+  if (this->_bGGAComplete || this->_bRMCComplete) {
+    while(this->_szLongitude[i] > 0x00 && i < _MAX_LONGITUDE_LEN) {
+      sz[i] = this->_szLongitude[i];
       i++;
       sz[i] = 0x00;   //always null terminate the end
     }
@@ -541,7 +533,7 @@ void GPS::getLongitude(char *sz) {
  * @note    Attempts to determine the frequency based on lat/lon. If there is no valid GPS position, then the function will return the US frequency of 144.390 MHz.
  *            If the position is over the UK, Yemen, or North Korea, a 0.000 MHz frequency is returned indicating that no transmissions should be made.
  */
-void GPS::getAPRSFrequency(char *sz) {
+bool GPS::getAPRSFrequency(char *sz) {
 
 /*
 Frequency Table for Worldwide APRS
@@ -554,23 +546,19 @@ No Transmit : North Korea
 144.390 MHz : Indonesia, Malaysia, Singapore, Thailand
 144.525 MHz : Hong Kong
 144.575 MHz : New Zealand
-144.640 MHz : China,[12] Taiwan
+144.640 MHz : China, Taiwan
 144.660 MHz : Japan
-144.800 MHz : South Africa, Europe,[13] Russia
+144.800 MHz : South Africa, Europe, Russia
 145.175 MHz : Australia
 145.530 MHz : Thailand
 145.570 MHz : Brazil
-145.825 MHz : International Space Station[14] and other satellites
-
-
+145.825 MHz : International Space Station and other satellites
 */
-
-
 
 	if (this->_bFixValid == false) {
 		//we don't have a valid fix, so return the default US frequency of 144.3900 MHz
 		strcpy(sz, "144.3900");
-		return;
+		return true;
 	}
 
 	//Convert the latitude and longitude to an integer for comparison
@@ -581,41 +569,46 @@ No Transmit : North Korea
 	if (this->_cLongitudeHemi == 'W') iLon = -iLon;    //convert to negative if we're in the western hemisphere
 
 
+	Serial.print(F("Lat: "));
+	Serial.print(iLat);
+	Serial.print(F("Lon: "));
+	Serial.print(iLon);
+
 	//Check the latitude and longitude to see if we're in a country that doesn't allow APRS transmissions
 	//UK - no transmissions allowed
 	if (iLat >= 49 && iLat <= 61 && iLon >= -8 && iLon <= 2) {
 		//we're in the UK - return 0.0000 MHz to indicate no transmissions
 		strcpy(sz, "000.0000");
-		if (this->_debugLevel >= 2) Serial.println(F("No-Xmit for UK"));
+		if (this->_debugLevel >= 2) Serial.println(F("NoXmit: UK"));
 		if (this->_debugLevel >= 1) {
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return false;
 	}
 
 	//Yemen - no transmissions allowed
 	if (iLat >= 12 && iLat <= 19 && iLon >= 42 && iLon <= 54) {
 		//we're in Yemen - return 0.0000 MHz to indicate no transmissions
 		strcpy(sz, "000.0000");
-		if (this->_debugLevel >= 2) Serial.println(F("No-Xmit for Yemen"));
+		if (this->_debugLevel >= 2) Serial.println(F("NoXmit: Yemen"));
 		if (this->_debugLevel >= 1) {
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}		
-		return;
+		return false;
 	}
 
 	//North Korea - no transmissions allowed
 	if (iLat >= 37 && iLat <= 44 && iLon >= 124 && iLon <= 131) {
 		//we're in North Korea - return 0.0000 MHz to indicate no transmissions
 		strcpy(sz, "000.0000");
-		if (this->_debugLevel >= 2) Serial.println(F("No-Xmit for North Korea"));
+		if (this->_debugLevel >= 2) Serial.println(F("NoXmit: N. Korea"));
 		if (this->_debugLevel >= 1) {
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return false;
 	}
 
 	//Check the minor regions that overlap with the major regions
@@ -628,7 +621,7 @@ No Transmit : North Korea
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//Japan is carved out of the China region, so we need to check for that
@@ -640,7 +633,7 @@ No Transmit : North Korea
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//Thailand is carved out of the Indonesia/Philippines region, so we need to check for that
@@ -652,7 +645,7 @@ No Transmit : North Korea
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//Hong Kong is carved out of the China region, so we need to check for that
@@ -664,7 +657,7 @@ No Transmit : North Korea
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 
@@ -673,12 +666,12 @@ No Transmit : North Korea
 	if (iLat >= 0 && iLat <= 80 && iLon >= -130 && iLon <= -34) {
 		//we're in North America - return 144.3900 MHz
 		strcpy(sz, "144.3900");
-		if (this->_debugLevel >= 2) Serial.println(F("North America"));
+		if (this->_debugLevel >= 2) Serial.println(F("NA"));
 		if (this->_debugLevel >= 1) {
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//Alaska - 144.3900 MHz
@@ -690,7 +683,7 @@ No Transmit : North Korea
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//Hawaii - 144.3900 MHz
@@ -702,19 +695,19 @@ No Transmit : North Korea
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//South America - 144.3900 MHz
 	if (iLat >= -60 && iLat <= 0 && iLon >= -103 && iLon <= -33) {
 		//we're in South America - return 144.3900 MHz
 		strcpy(sz, "144.3900");
-		if (this->_debugLevel >= 2) Serial.println(F("South America"));
+		if (this->_debugLevel >= 2) Serial.println(F("SA"));
 		if (this->_debugLevel >= 1) {
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//Indonesia/Malaysia/Singapore - 144.3900 MHz
@@ -726,7 +719,7 @@ No Transmit : North Korea
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//China/Taiwan - 144.6400 MHz
@@ -738,7 +731,7 @@ No Transmit : North Korea
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//New Zealand - 144.5750 MHz
@@ -750,7 +743,7 @@ No Transmit : North Korea
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//Australia - 145.1750 MHz
@@ -762,31 +755,31 @@ No Transmit : North Korea
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//Europe - 144.8000 MHz
 	if (iLat >= 36 && iLat <= 73 && iLon >= -12 && iLon <= 50) {
 		//we're in Europe - return 144.8000 MHz
 		strcpy(sz, "144.8000");
-		if (this->_debugLevel >= 2) Serial.println(F("Europe"));
+		if (this->_debugLevel >= 2) Serial.println(F("EU"));
 		if (this->_debugLevel >= 1) {
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//Africa - 144.8000 MHz
 	if (iLat >= -36 && iLat <= 36 && iLon >= -21 && iLon <= 52) {
 		//we're in Africa - return 144.8000 MHz
 		strcpy(sz, "144.8000");
-		if (this->_debugLevel >= 2) Serial.println(F("Africa"));
+		if (this->_debugLevel >= 2) Serial.println(F("AF"));
 		if (this->_debugLevel >= 1) {
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 	//Russia - 144.8000 MHz
@@ -798,18 +791,18 @@ No Transmit : North Korea
 			Serial.print(F("Freq: "));
 			Serial.println(sz);
 		}
-		return;
+		return true;
 	}
 
 
 
 	//If nothing else matched, return the ISS space station frequency of 145.8250 MHz
 	strcpy(sz, "145.8250");
-	if (this->_debugLevel >= 2) Serial.println(F("Default ISS"));
+	if (this->_debugLevel >= 2) Serial.println(F("ISS"));
 	if (this->_debugLevel >= 1) {
 		Serial.print(F("Freq: "));
 		Serial.println(sz);
 	}
-	return;
+	return true;
 }
 

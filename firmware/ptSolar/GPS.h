@@ -127,7 +127,7 @@ class GPS
     void setGPSType(uint8_t type) { _GPSType = type; }
 
   
-    void GPS::getAPRSFrequency(char *sz);
+    bool GPS::getAPRSFrequency(char *sz);
 
 	private:
 		void parseGGA();

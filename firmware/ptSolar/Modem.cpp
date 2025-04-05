@@ -75,7 +75,7 @@ void Modem::PTT(bool tx) {
     delay(100);
 
     //Connect to the radio chip
-    if (this->_debugLevel >0) Serial.println("Sending DMOConnect...");
+    if (this->_debugLevel >0) Serial.println(F("Conn"));
     DRA.print(F("AT+DMOCONNECT\r\n"));
     
     //Get the response:
@@ -87,11 +87,15 @@ void Modem::PTT(bool tx) {
       }
     } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);
     if (this->_debugLevel ==2) Serial.println("");
-    if (this->_debugLevel >0) Serial.println("End Connect Response.");
+    if (this->_debugLevel >0) Serial.println(F("End Resp"));
     delay(100);
 
     //Configure the transceiver
-    if (this->_debugLevel >0) Serial.println("Sending DMO Set Group...");
+    if (this->_debugLevel >0) {
+      Serial.print(F("Set Freq: "));
+      Serial.println(this->_szTxFreq);
+    }
+
     DRA.print(F("AT+DMOSETGROUP=0,"));
     DRA.print(this->_szTxFreq);
     DRA.print(",");
@@ -107,11 +111,11 @@ void Modem::PTT(bool tx) {
       }
     } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);    
     if (this->_debugLevel ==2) Serial.println("");
-    if (this->_debugLevel >0) Serial.println("End DMO Set Response.");
+    if (this->_debugLevel >0) Serial.println(F("End Resp"));
     //delay(100);
 
-
-    DRA.print(F("AT+SETFILTER=1,1,1\r\n"));   //Set the filter to 0,0,0   //90% copy at 010
+    if (this->_debugLevel >0) Serial.println("Filter:");
+    DRA.print(F("AT+SETFILTER=1,1,1\r\n"));   //Set the tx/rx filters to 1,1,1
 
     //Get the response:
     start = millis();
@@ -122,7 +126,7 @@ void Modem::PTT(bool tx) {
       }
     } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);
     if (this->_debugLevel ==2) Serial.println("");
-    if (this->_debugLevel >0) Serial.println("End Set Filter Response.");
+    if (this->_debugLevel >0) Serial.println(F("End Resp"));
     delay(100);
 
 
@@ -603,7 +607,6 @@ void Modem::configTimers() {
 
 
   OCR1A = this->TIMER1_OCR;
-
 
 
   //Timer2 drives the PWM frequency.  We need it sufficiently higher than the 1200/2200hz tones

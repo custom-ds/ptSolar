@@ -78,7 +78,7 @@ void ptConfig::setDefaultConfig() {
     this->_config.BeaconAltitudeDelayHigh = 45;
     this->_config.BeaconSlot1 = 15;
     this->_config.BeaconSlot2 = 45;
-    strcpy(this->_config.StatusMessage, "Project Traveler ptSolar");
+    strcpy(this->_config.StatusMessage, "Project Traveler");
     this->_config.StatusXmitGPSFix = 1;
     this->_config.StatusXmitBurstAltitude = 1;
     this->_config.StatusXmitBatteryVoltage = 1;
@@ -86,7 +86,7 @@ void ptConfig::setDefaultConfig() {
     this->_config.StatusXmitPressure = 1;
     this->_config.StatusXmitCustom;
 
-    this->_config.RadioType = 1;   //DRA818V transmitter
+    this->_config.RadioType = 1;   //SA/DRA818V transmitter
     this->_config.RadioTxDelay = 50;
     this->_config.RadioCourtesyTone = 0;
     strcpy(this->_config.RadioFreqTx, "144.3900");
@@ -136,7 +136,6 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
     for (iSize=0; iSize<iMaxLen; iSize++) szParam[iSize] = 0x00;    //load the array with nulls just in case we don't find anything
     iSize = 0;    //reset to start counting up for real
   
-    //Serial.println("W: ");
     while (millis() < iMilliTimeout) {
   
       if (Serial.available()) {
@@ -154,7 +153,7 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
         }
       }
     }
-    Serial.println(F("timeout"));
+    Serial.println(F("Timeout"));
   }
   
   /**
@@ -174,15 +173,14 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
       }
   
       if (Serial.read() == 0x01) {
-        Serial.println(F("Reading..."));
   
         //we have the start to a config string
   
         this->readConfigParam(szParam, sizeof(szParam));    //should be PT01xx for the ptSolar
         if (strcmp(szParam, CONFIG_VERSION) != 0) {
           //not a config string
-          Serial.println(F("Failed to find Config Type param."));
-          Serial.print(F("Found: "));
+          Serial.println(F("No Config Type"));
+          Serial.print(F(" : "));
           Serial.println(szParam);
           return false;
         }
