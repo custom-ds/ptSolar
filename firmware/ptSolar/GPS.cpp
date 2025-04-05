@@ -535,274 +535,105 @@ void GPS::getLongitude(char *sz) {
  */
 bool GPS::getAPRSFrequency(char *sz) {
 
-/*
-Frequency Table for Worldwide APRS
-
-No Transmit : UK
-No Transmit : Yemen
-No Transmit : North Korea
-144.390 MHz : North America, 
-144.390 MHz : Argentina, Colombia, Chile, 
-144.390 MHz : Indonesia, Malaysia, Singapore, Thailand
-144.525 MHz : Hong Kong
-144.575 MHz : New Zealand
-144.640 MHz : China, Taiwan
-144.660 MHz : Japan
-144.800 MHz : South Africa, Europe, Russia
-145.175 MHz : Australia
-145.530 MHz : Thailand
-145.570 MHz : Brazil
-145.825 MHz : International Space Station and other satellites
-*/
+	
+	uint8_t freqSelected = 99;	//Default to 99, which is the International Space Station frequency of 145.825 MHz
 
 	if (this->_bFixValid == false) {
 		//we don't have a valid fix, so return the default US frequency of 144.3900 MHz
+		freqSelected = 1;		// just default to the US Frequency of 144.3900 MHz if we don't have a Sat Lock
+	} else {
+
+		//Convert the latitude and longitude to an integer for comparison
+		// Lat/Lon are in the format ddmm, and range from -9000 to 9000 and -18000 to 18000 respectively
+		int iLat = atoi(this->_szLatitude);
+		int iLon = atoi(this->_szLongitude);
+
+		if (this->_cLatitudeHemi == 'S') iLat = -iLat;    //convert to negative if we're in the southern hemisphere
+		if (this->_cLongitudeHemi == 'W') iLon = -iLon;    //convert to negative if we're in the western hemisphere
+
+
+		Serial.print(F("Lat: "));
+		Serial.println(iLat);
+		Serial.print(F("Lon: "));
+		Serial.println(iLon);
+
+		//The table below is a list of the APRS frequencies for different regions of the world. The ordering must go from least specific, to most specific.
+		// Any transmit-prohibited areas must be listed LAST, or else they will be overridden by the other regions.
+
+		//Use the included XLSX file to maintain this list of lat/lons and associated frequencies.
+
+		// Transmit geo-lookups from east specific, to most specific. Transmit prohibits must be at the bottom of this list.
+		if (iLat >= 0 && iLat <= 8000 && iLon >= -13000 && iLon <= -3400) freqSelected = 1;    //US Canada Mexico on 144.3900MHz
+		if (iLat >= -6000 && iLat <= 0 && iLon >= -10300 && iLon <= -3300) freqSelected = 1;    //South America on 144.3900MHz
+		if (iLat >= -1000 && iLat <= 2000 && iLon >= 9600 && iLon <= 14200) freqSelected = 1;    //Indonesia/Malaysia/Singapore on 144.3900MHz
+		if (iLat >= 2000 && iLat <= 5200 && iLon >= 6900 && iLon <= 13500) freqSelected = 4;    //China/Taiwan on 144.6400MHz
+		if (iLat >= -4900 && iLat <= -3200 && iLon >= 16500 && iLon <= 18000) freqSelected = 3;    //New Zealand on 144.5750MHz
+		if (iLat >= -4500 && iLat <= -900 && iLon >= 11100 && iLon <= 15400) freqSelected = 7;    //Austrailia on 145.1750MHz
+		if (iLat >= 3600 && iLat <= 7300 && iLon >= -1200 && iLon <= 5000) freqSelected = 6;    //Europe on 144.8000MHz
+		if (iLat >= -3600 && iLat <= 3600 && iLon >= -2100 && iLon <= 5200) freqSelected = 6;    //Africa on 144.8000MHz
+		if (iLat >= 5200 && iLat <= 7500 && iLon >= 5000 && iLon <= 18000) freqSelected = 6;    //Russia on 144.8000MHz
+		if (iLat >= 5000 && iLat <= 8000 && iLon >= -16900 && iLon <= -13000) freqSelected = 1;    //Alaska on 144.3900MHz
+		if (iLat >= 1500 && iLat <= 2600 && iLon >= -16500 && iLon <= -15300) freqSelected = 1;    //Hawaii on 144.3900MHz
+		if (iLat >= -3000 && iLat <= 300 && iLon >= -7000 && iLon <= -3300) freqSelected = 9;    //Brazil on 145.5700MHz
+		if (iLat >= 3000 && iLat <= 4500 && iLon >= 12900 && iLon <= 14600) freqSelected = 5;    //Japan on 144.6600MHz
+		if (iLat >= 500 && iLat <= 2036 && iLon >= 9700 && iLon <= 10600) freqSelected = 8;    //Thailand on 145.5300MHz
+		if (iLat >= 2200 && iLat <= 2230 && iLon >= 11348 && iLon <= 11430) freqSelected = 2;    //Hong Kong on 144.5250MHz
+		if (iLat >= 4900 && iLat <= 6100 && iLon >= -800 && iLon <= 200) freqSelected = 0;    //UK on 000.0000MHz
+		if (iLat >= 1148 && iLat <= 1912 && iLon >= 4200 && iLon <= 5442) freqSelected = 0;    //Yemen on 000.0000MHz
+		if (iLat >= 3742 && iLat <= 4306 && iLon >= 13100 && iLon <= 12400) freqSelected = 0;    //North Korea on 000.0000MHz
+	}
+
+	switch (freqSelected) {
+	case 0:
+		//Transmit Prohibited
+		strcpy(sz, "000.0000");
+		break;
+	case 1:
+		//North America, US, Canada, Mexico
 		strcpy(sz, "144.3900");
-		return true;
-	}
-
-	//Convert the latitude and longitude to an integer for comparison
-	int iLat = atoi(this->_szLatitude);
-	int iLon = atoi(this->_szLongitude);
-
-	if (this->_cLatitudeHemi == 'S') iLat = -iLat;    //convert to negative if we're in the southern hemisphere
-	if (this->_cLongitudeHemi == 'W') iLon = -iLon;    //convert to negative if we're in the western hemisphere
-
-
-	Serial.print(F("Lat: "));
-	Serial.print(iLat);
-	Serial.print(F("Lon: "));
-	Serial.print(iLon);
-
-	//Check the latitude and longitude to see if we're in a country that doesn't allow APRS transmissions
-	//UK - no transmissions allowed
-	if (iLat >= 49 && iLat <= 61 && iLon >= -8 && iLon <= 2) {
-		//we're in the UK - return 0.0000 MHz to indicate no transmissions
-		strcpy(sz, "000.0000");
-		if (this->_debugLevel >= 2) Serial.println(F("NoXmit: UK"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return false;
-	}
-
-	//Yemen - no transmissions allowed
-	if (iLat >= 12 && iLat <= 19 && iLon >= 42 && iLon <= 54) {
-		//we're in Yemen - return 0.0000 MHz to indicate no transmissions
-		strcpy(sz, "000.0000");
-		if (this->_debugLevel >= 2) Serial.println(F("NoXmit: Yemen"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}		
-		return false;
-	}
-
-	//North Korea - no transmissions allowed
-	if (iLat >= 37 && iLat <= 44 && iLon >= 124 && iLon <= 131) {
-		//we're in North Korea - return 0.0000 MHz to indicate no transmissions
-		strcpy(sz, "000.0000");
-		if (this->_debugLevel >= 2) Serial.println(F("NoXmit: N. Korea"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return false;
-	}
-
-	//Check the minor regions that overlap with the major regions
-	//Brazil is carved out of the South America region, so we need to check for that
-	if (iLat >= -30 && iLat <= 3 && iLon >= -70 && iLon <= -33) {
-		//we're in Brazil - return 145.5700 MHz
-		strcpy(sz, "145.5700");
-		if (this->_debugLevel >= 2) Serial.println(F("Brazil"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//Japan is carved out of the China region, so we need to check for that
-	if (iLat >= 30 && iLat <= 45 && iLon >= 129 && iLon <= 146) {
-		//we're in Japan - return 144.6600 MHz
-		strcpy(sz, "144.6600");
-		if (this->_debugLevel >= 2) Serial.println(F("Japan"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//Thailand is carved out of the Indonesia/Philippines region, so we need to check for that
-	if (iLat >= 5 && iLat <= 21 && iLon >= 97 && iLon <= 106) {
-		//we're in Thailand - return 145.5300 MHz
-		strcpy(sz, "145.5300");
-		if (this->_debugLevel >= 2) Serial.println(F("Thailand"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//Hong Kong is carved out of the China region, so we need to check for that
-	if (iLat >= 22 && iLat <= 23 && iLon >= 114 && iLon <= 115) {
-		//we're in Hong Kong - return 144.5250 MHz
+		break;
+	case 2:
+		//Hong Kong
 		strcpy(sz, "144.5250");
-		if (this->_debugLevel >= 2) Serial.println(F("Hong Kong"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-
-	//Starting the major regions
-	//US/Canada/Mexico - 144.3900 MHz
-	if (iLat >= 0 && iLat <= 80 && iLon >= -130 && iLon <= -34) {
-		//we're in North America - return 144.3900 MHz
-		strcpy(sz, "144.3900");
-		if (this->_debugLevel >= 2) Serial.println(F("NA"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//Alaska - 144.3900 MHz
-	if (iLat >= 50 && iLat <= 80 && iLon >= -169 && iLon <= -130) {
-		//we're in Alaska - return 144.3900 MHz
-		strcpy(sz, "144.3900");
-		if (this->_debugLevel >= 2) Serial.println(F("Alaska"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//Hawaii - 144.3900 MHz
-	if (iLat >= 15 && iLat <= 26 && iLon >= -165 && iLon <= -153) {
-		//we're in Hawaii - return 144.3900 MHz
-		strcpy(sz, "144.3900");
-		if (this->_debugLevel >= 2) Serial.println(F("Hawaii"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//South America - 144.3900 MHz
-	if (iLat >= -60 && iLat <= 0 && iLon >= -103 && iLon <= -33) {
-		//we're in South America - return 144.3900 MHz
-		strcpy(sz, "144.3900");
-		if (this->_debugLevel >= 2) Serial.println(F("SA"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//Indonesia/Malaysia/Singapore - 144.3900 MHz
-	if (iLat >= -10 && iLat <= 20 && iLon >= 96 && iLon <= 142) {
-		//we're in Indonesia - return 144.3900 MHz
-		strcpy(sz, "144.3900");
-		if (this->_debugLevel >= 2) Serial.println(F("Indonesia"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//China/Taiwan - 144.6400 MHz
-	if (iLat >= 20 && iLat <= 52 && iLon >= 69 && iLon <= 135) {
-		//we're in China - return 144.6400 MHz
-		strcpy(sz, "144.6400");
-		if (this->_debugLevel >= 2) Serial.println(F("China"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//New Zealand - 144.5750 MHz
-	if (iLat >= -49 && iLat <= -32 && iLon >= 165 && iLon <= 178) {
-		//we're in New Zealand - return 144.5750 MHz
+		break;
+	case 3:	
+		//New Zealand
 		strcpy(sz, "144.5750");
-		if (this->_debugLevel >= 2) Serial.println(F("New Zealand"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//Australia - 145.1750 MHz
-	if (iLat >= -45 && iLat <= -9 && iLon >= 111 && iLon <= 154) {
-		//we're in Australia - return 145.1750 MHz
+		break;
+	case 4:
+		//China/Taiwan
+		strcpy(sz, "144.6400");
+		break;
+	case 5:
+		//Japan
+		strcpy(sz, "144.6600");
+		break;
+	case 6:
+		//Europe/Africa/Russia
+		strcpy(sz, "144.8000");
+		break;
+	case 7:
+		//Australia
 		strcpy(sz, "145.1750");
-		if (this->_debugLevel >= 2) Serial.println(F("Australia"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
+		break;
+	case 8:
+		//Thailand
+		strcpy(sz, "145.5300");
+		break;
+	case 9:
+		//Brazil
+		strcpy(sz, "145.5700");
+		break;
+	case 99:
+		//ISS Satellite
+		strcpy(sz, "145.8250");
+		break;
+	default:
+		strcpy(sz, "144.3900");
+		break;
 	}
-
-	//Europe - 144.8000 MHz
-	if (iLat >= 36 && iLat <= 73 && iLon >= -12 && iLon <= 50) {
-		//we're in Europe - return 144.8000 MHz
-		strcpy(sz, "144.8000");
-		if (this->_debugLevel >= 2) Serial.println(F("EU"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//Africa - 144.8000 MHz
-	if (iLat >= -36 && iLat <= 36 && iLon >= -21 && iLon <= 52) {
-		//we're in Africa - return 144.8000 MHz
-		strcpy(sz, "144.8000");
-		if (this->_debugLevel >= 2) Serial.println(F("AF"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-	//Russia - 144.8000 MHz
-	if (iLat >= 52 && iLat <= 75 && iLon >= 50 && iLon <= 180) {
-		//we're in Russia - return 144.8000 MHz
-		strcpy(sz, "144.8000");
-		if (this->_debugLevel >= 2) Serial.println(F("Russia"));
-		if (this->_debugLevel >= 1) {
-			Serial.print(F("Freq: "));
-			Serial.println(sz);
-		}
-		return true;
-	}
-
-
-
-	//If nothing else matched, return the ISS space station frequency of 145.8250 MHz
-	strcpy(sz, "145.8250");
-	if (this->_debugLevel >= 2) Serial.println(F("ISS"));
-	if (this->_debugLevel >= 1) {
-		Serial.print(F("Freq: "));
-		Serial.println(sz);
-	}
-	return true;
+	
+	
+	return (freqSelected != 0);		//return false if transmissions are prohibited, true if they are allowed
+	
 }
-
