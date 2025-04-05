@@ -32,6 +32,7 @@ ptTracker::ptTracker(uint8_t pinLED, uint8_t pinPiezo, uint8_t pinBattery, uint8
     this->_annunciateMode = annunciateMode;
   }
 
+
 /**
  * @brief Annunciate a character via the LED and/or buzzer.
  * @param c The character to annunciate.
@@ -124,13 +125,14 @@ float ptTracker::readBatteryVoltage(bool bSerialOut) {
     //  fVolts = fVolts + 0.19;      //account for the inline diode on the power supply  // not interested in diode drop for solar purposes??????????????????????????????????????????????????
 
     if (bSerialOut) {
-        Serial.print(F("Battery: "));
+        Serial.print(F("Batt: "));
         Serial.print(fVolts);
         Serial.println("V");    
     }
 
     return fVolts;
 }
+
 
 /**
  * @brief Annunciate a tone on the audio annunciator.

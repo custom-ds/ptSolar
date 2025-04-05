@@ -75,7 +75,7 @@ void Modem::PTT(bool tx) {
     delay(100);
 
     //Connect to the radio chip
-    if (this->_debugLevel >0) Serial.println("Sending DMOConnect...");
+    if (this->_debugLevel >0) Serial.println(F("Conn"));
     DRA.print(F("AT+DMOCONNECT\r\n"));
     
     //Get the response:
@@ -87,15 +87,19 @@ void Modem::PTT(bool tx) {
       }
     } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);
     if (this->_debugLevel ==2) Serial.println("");
-    if (this->_debugLevel >0) Serial.println("End Connect Response.");
+    if (this->_debugLevel >0) Serial.println(F("End Resp"));
     delay(100);
 
     //Configure the transceiver
-    if (this->_debugLevel >0) Serial.println("Sending DMO Set Group...");
+    if (this->_debugLevel >0) {
+      Serial.print(F("Set Freq: "));
+      Serial.println(this->_szTxFreq);
+    }
+
     DRA.print(F("AT+DMOSETGROUP=0,"));
-    DRA.print("144.3900");
+    DRA.print(this->_szTxFreq);
     DRA.print(",");
-    DRA.print("144.3900");
+    DRA.print(this->_szRxFreq);
     DRA.print(F(",0000,4,0000\r\n"));   //No CTCSS Tx, Sql 4, No CTCSS Rx
 
     //Get the response:
@@ -107,11 +111,11 @@ void Modem::PTT(bool tx) {
       }
     } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);    
     if (this->_debugLevel ==2) Serial.println("");
-    if (this->_debugLevel >0) Serial.println("End DMO Set Response.");
+    if (this->_debugLevel >0) Serial.println(F("End Resp"));
     //delay(100);
 
-
-    DRA.print(F("AT+SETFILTER=1,1,1\r\n"));   //Set the filter to 0,0,0   //90% copy at 010
+    if (this->_debugLevel >0) Serial.println("Filter:");
+    DRA.print(F("AT+SETFILTER=1,1,1\r\n"));   //Set the tx/rx filters to 1,1,1
 
     //Get the response:
     start = millis();
@@ -122,9 +126,8 @@ void Modem::PTT(bool tx) {
       }
     } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);
     if (this->_debugLevel ==2) Serial.println("");
-    if (this->_debugLevel >0) Serial.println("End Set Filter Response.");
+    if (this->_debugLevel >0) Serial.println(F("End Resp"));
     delay(100);
-
 
     //Push the PTT
     digitalWrite(this->_pinPTT, HIGH);   //There's a delay of about 37mS from PTT going high to when RF is emitted.
@@ -134,10 +137,9 @@ void Modem::PTT(bool tx) {
     digitalWrite(this->_pinEnable, LOW);
 
     pinMode(this->_pinTxAudio, INPUT);    //Configure as an input until we need it. This will save power.
-
   }
-
 }
+
 
 /**
  * @brief  Sets the debug level for the APRS object.
@@ -146,8 +148,6 @@ void Modem::PTT(bool tx) {
 void Modem::setDebugLevel(uint8_t level) {
   this->_debugLevel = level;
 }
-
-
 
 
 /**
@@ -258,7 +258,6 @@ void Modem::packetAppend(float f) {
   this->packetAppend('.'); // print the decimal point
   int iDec = (f - int(f)) * 10;    //calculate the decimal point portion
   this->packetAppend((long)iDec, false) ; 
-  
 }
 
 
@@ -372,7 +371,6 @@ void Modem::packetSend() {
 
   _iSZLen = -1;      //reset back to a clean buffer
 }
-
 
 
 /**
@@ -550,8 +548,8 @@ bool Modem::getNextBit() {
   }
 
   return bOut;  
-  
 }
+
 
 /**
  * @brief  Returns the current state of the noBitStuffing flag.  This flag is used to indicate whether or not to stuff an extra bit into the packet because of an excessive number of 1's in a row.
@@ -561,8 +559,6 @@ bool Modem::getNextBit() {
 bool Modem::noBitStuffing() {
   return this->_bNoStuffing;  
 }
-
-
 
 
 /**
@@ -605,7 +601,6 @@ void Modem::configTimers() {
   OCR1A = this->TIMER1_OCR;
 
 
-
   //Timer2 drives the PWM frequency.  We need it sufficiently higher than the 1200/2200hz tones
   //Set timer2 to fast PWM mode
   TCCR2A = (1 << WGM20) | (1 << WGM21);
@@ -613,6 +608,7 @@ void Modem::configTimers() {
 
   OCR2A = 0xc8;    //Overflow counter for Timer2. This needs to be kept in sync with the maximum value in the arySin table.
 }
+
 
 /**
  * @brief  Starts and stops the Timer1 ISR routine.
@@ -640,56 +636,3 @@ void Modem::setTxDelay(unsigned int txDelay) {
 uint8_t Modem::getPinTxAudio() {
   return this->_pinTxAudio;
 }
-
-/**
-  * @brief  Returns the DAC value for the given phase.  This function is used to generate the audio waveform for the transmitter.
-  * @param  iPhase: The phase of the waveform to generate in a 0-255 range.
-  * @return The DAC value for the given phase.
-  * @note  This function is used to generate the audio waveform for the transmitter.  It uses a lookup table to generate a 1/4 sine wave, and then mirrors it for the other 3/4 of the wave.
-  *         The maximum value that can be passed in is 255, but is limited by the Overflow Counter Register (OCR2A). If you exceed the OCR2A value, the resulting
-  *         waveform will be clipped.
-  */
-// uint8_t Modem::getDACValue(uint8_t iPhase) {
-
-//   //use the Excel spreadsheet to generate the 1/4 sine wave table.  This is the first 1/4 of the sine wave, then we mirror it for the other 3/4 of the wave.
-//   //The maxium value that can be passed in is 255, but is limited by the Overflow Counter Register (OCR2A). If you exceed the OCR2A value, the resulting
-//   //waveform will be clipped.
-//   uint8_t arySin[] = {2, 5, 7, 10, 12, 15, 17, 20, 22, 24, 
-//     27, 29, 31, 34, 36, 38, 41, 43, 45, 47, 
-//     49, 51, 53, 56, 58, 60, 62, 63, 65, 67, 
-//     69, 71, 72, 74, 76, 77, 79, 80, 82, 83, 
-//     84, 86, 87, 88, 89, 90, 91, 92, 93, 94, 
-//     95, 96, 96, 97, 98, 98, 99, 99, 99, 100, 
-//     100, 100, 100, 100};
-    
-//     //the reference value for the sine wave.  This is the center of the wave.
-//     uint8_t ref = 100;
-    
-    
-
-//   if (iPhase < 128) {
-//     //first half of the sine wave
-//     if (iPhase < 64) {
-//       //first quarter of the sine wave
-//       return arySin[iPhase] + ref;
-//     } else {
-//       //second quarter of the sine wave
-//       return arySin[iPhase-64] + ref;
-//     }
-//   } else {
-//     //second half of the sine wave
-//     if (iPhase < 192) {
-//       //third quarter of the sine wave
-//       return ref - arySin[iPhase-128];
-//     } else {
-//       //fourth quarter of the sine wave
-//       return ref - arySin[iPhase-192];
-//     }
-//   }
-
-
-  
-// }
-
-
-
