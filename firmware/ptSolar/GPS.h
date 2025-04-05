@@ -111,16 +111,16 @@ class GPS
     	else return false;
     }    
     
-    inline void ClearSentenceFlags() {
+    inline void clearSentenceFlags() {
       _bGotNewRMC = false;
       _bGotNewGGA = false;
     }
     
-    inline bool GotNewRMC() { return _bGotNewRMC; }
+    inline bool gotNewRMC() { return _bGotNewRMC; }
     
-    inline bool GotNewGGA() { return _bGotNewGGA; }
+    inline bool gotNewGGA() { return _bGotNewGGA; }
     
-    inline unsigned long LastDecodedMillis() { return _lastDecodedMillis; }
+    inline unsigned long getLastDecodedMillis() { return _lastDecodedMillis; }
     
     inline void setDebugNEMA(bool output) { _outputNEMA = output; }
     void setDebugLevel(uint8_t level) { _debugLevel = level; }

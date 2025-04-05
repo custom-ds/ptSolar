@@ -157,6 +157,10 @@ void GPS::initGPS() {
 }
 
 
+/**
+ * @brief  Enables the GPS and waits for the GPS to collect GPGGA and GPRMC sentences.
+ * @note   This function will collect GPS strings from the GPS module and parse them for valid sentences. It will timeout after GPS_MAX_COLLECTION_TIME milliseconds if no data is received.
+ */
 void GPS::collectGPSStrings() {
 	SoftwareSerial GPS(this->_pinGPSRx, this->_pinGPSTx, false);    //A True at the end indicates that the serial data is inverted.
 	GPS.begin(9600);
@@ -166,7 +170,7 @@ void GPS::collectGPSStrings() {
 	digitalWrite(this->_pinGPSEnable, HIGH);    //enable the GPS
 
 	this->clearInputBuffer();
-	this->ClearSentenceFlags();      //clear out the temporary flags to indicate that the new sentences have come in
+	this->clearSentenceFlags();      //clear out the temporary flags to indicate that the new sentences have come in
 
 
 	//keep track of how long we can listen to the GPS
@@ -183,7 +187,7 @@ void GPS::collectGPSStrings() {
 			this->addChar(c);
 
 			//check the sentence flags to see if both RMC and GGA's have been received in this session
-			if (this->GotNewRMC() && this->GotNewGGA()) {
+			if (this->gotNewRMC() && this->gotNewGGA()) {
 				//we got new GGA and RMC strings - exit out now rather than waiting the whole alloted period.
 				return;
 			}
@@ -196,15 +200,25 @@ void GPS::collectGPSStrings() {
 	return;
 }
 
-void GPS::clearInputBuffer(void) {
+
+/**
+ * @brief  Clears the input buffer for the GPS module.
+ * @note   This function is called before beginng the collection process.
+ */
+void GPS::clearInputBuffer() {
   //need to flush out the old data before importing new, or else you can wind up with odd combinations of old headers and new tails
   _szTemp[0] = 0;
   _iTempPtr = 0;
   _bFoundStart = false;
 }
-  
-  
 
+
+/**
+ * @brief  Adds a character to the GPS string buffer.  Once a newline is found, the string is parsed for valid sentences.
+ * @param  c - The character to add to the GPS string buffer.
+ * @return None
+ * @note   This function will add a character to the GPS string buffer and parse it for valid sentences.
+ */
 void GPS::addChar(char c) {
 	//first make sure we still have room in the _szTemp for another char (and null termiation)
 	if (_iTempPtr >= (_MAX_SENTENCE_LEN - 2)) {
@@ -239,9 +253,8 @@ void GPS::addChar(char c) {
 			if (_szTemp[1] == 'G' && (_szTemp[2] == 'P' || _szTemp[2] == 'N') && _szTemp[3] == 'R' && _szTemp[4] == 'M' && _szTemp[5] == 'C') {
 				//we have the start of an RMC string
 
-        if (this->_outputNEMA) {
-          Serial.println(_szTemp);
-        }
+				if (this->_outputNEMA) Serial.println(_szTemp);		//dump the GPS sentence to the serial port if desired.
+
 				this->_bRMCComplete = true;    //set a flag indicating that an RMC sentence has been received, therefore we have valid data
 
 				this->parseRMC();
@@ -251,10 +264,10 @@ void GPS::addChar(char c) {
 			
 			} else if (_szTemp[1] == 'G' && (_szTemp[2] == 'P' || _szTemp[2] == 'N') && _szTemp[3] == 'G' && _szTemp[4] == 'G' && _szTemp[5] == 'A') {
 				//we have the start of an GGA string
+				
+				if (this->_outputNEMA) Serial.println(_szTemp);		//dump the GPS sentence to the serial port if desired.
 
-        if (this->_outputNEMA) {
-          Serial.println(_szTemp);
-        }
+
 				this->_bGGAComplete = true;
 				this->parseGGA();
 				this->_bGotNewGGA = true;      //set a temporary flag indicating that we got a new RMC sentence
@@ -276,10 +289,10 @@ void GPS::addChar(char c) {
 }
 
 
-
-
-
-//Private functions
+/**
+ * @brief   Parses apart the GPRMC string and extracts the time, latitude, longitude, speed, and other information.
+ * @note    This function is used to parse the RMC string from the GPS module.
+ */
 void GPS::parseRMC() {
 //This function parses the time and altitude from the GGA string that is stored in the variable being passed
 //0         10        20        30        40        50        60        70
@@ -367,9 +380,13 @@ void GPS::parseRMC() {
 	
 	//get date
 	this->getString(ptrTemp, this->_szGPSDate, 7);
-	
-	
 }
+
+
+/**
+ * @brief   Parses apart the GPGGA string and extracts the time, latitude, longitude, altitude, and other information.
+ * @note    This function is used to parse the GGA string from the GPS module.
+ */
 void GPS::parseGGA() {
 	//This function parses the time and altitude from the GGA string that is stored in the variable being passed
 	//0         10        20        30        40        50        60        70
@@ -451,6 +468,14 @@ void GPS::parseGGA() {
 }
 
 
+/**
+ * @brief   Extracts a substring from the given string until a comma or null character is found.
+ * @param   ptrHaystack: The string to search in.
+ * @param   ptrFound: The buffer to store the found substring.
+ * @param   iMaxLength: The maximum length of the substring to extract.
+ * @return: None.
+ * @note    This function is used to extract substrings from GPS sentences.
+ */
 void GPS::getString(char *ptrHaystack, char *ptrFound, int iMaxLength) {
 	//Extracts the string (up to iMaxLength) from the char*, and returns a pointer
 	
@@ -468,6 +493,14 @@ void GPS::getString(char *ptrHaystack, char *ptrFound, int iMaxLength) {
 }
 
 
+/**
+ * @brief   Validates the GPS sentence by checking the number of commas and minimum length.
+ * @param   szGPSSentence: The GPS sentence to validate.
+ * @param   iNumCommas: The expected number of commas in the sentence.
+ * @param   iMinLength: The minimum length of the sentence.
+ * @return: True if the sentence is valid, false otherwise.
+ * @note    This function checks to make sure we have a string that is null terminated, has the appropriate # of commas, and has valid chars within it.
+ */
 bool GPS::validateGPSSentence(char *szGPSSentence, int iNumCommas, int iMinLength) {
 	//checks to make sure we have a string that is null terminated, has the appropriate # of commas, and has valid chars within it
 	// Pass it the string to test, and the number of commas that should be included for this type of string
@@ -488,6 +521,13 @@ bool GPS::validateGPSSentence(char *szGPSSentence, int iNumCommas, int iMinLengt
 	
 }
 
+
+/**
+ * @brief   Skips to the next comma or null character in the string.
+ * @param   ptr: A pointer to the current position in the string.
+ * @return: A pointer to the next character after the comma or null character.
+ * @note    This function is used to skip over characters in a GPS sentence until it reaches a comma or null character.
+ */
 char* GPS::skipToNext(char *ptr) {
 	//takes a pointer, advances through until it either hits a null or gets past the next comma
 
@@ -500,6 +540,13 @@ char* GPS::skipToNext(char *ptr) {
 	return ptr;
 }
 
+
+/**
+ * @brief   Returns the current latitude in the form of a string.
+ * @param   sz: A pointer to a char array to store the latitude in.
+ * @return: None.
+ * @note    The function will return the latitude in the format ddmm.mmmm, where dd is degrees and mm.mmmm is minutes.  The string will be null terminated.
+ */
 void GPS::getLatitude(char *sz) {
   byte i = 0;
   sz[0] = 0x00;   //always make sure we return null if no valid data in the source
@@ -513,6 +560,13 @@ void GPS::getLatitude(char *sz) {
   }
 }
 
+
+/**
+ * @brief   Returns the current longitude in the form of a string.
+ * @param   sz: A pointer to a char array to store the longitude in.
+ * @return: None.
+ * @note    The function will return the latitude in the format dddmm.mmmm, where ddd is degrees and mm.mmmm is minutes.  The string will be null terminated.
+ */
 void GPS::getLongitude(char *sz) {
   byte i = 0;
   sz[0] = 0x00;   //always make sure we return null if no valid data in the source
@@ -525,6 +579,7 @@ void GPS::getLongitude(char *sz) {
     }
   }
 }
+
 
 /**
  * @brief   Returns the appopriate APRS frequency for the current location.  This function is used to determine the frequency to use for APRS transmissions.
@@ -633,7 +688,5 @@ bool GPS::getAPRSFrequency(char *sz) {
 		break;
 	}
 	
-	
 	return (freqSelected != 0);		//return false if transmissions are prohibited, true if they are allowed
-	
 }

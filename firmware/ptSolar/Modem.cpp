@@ -129,7 +129,6 @@ void Modem::PTT(bool tx) {
     if (this->_debugLevel >0) Serial.println(F("End Resp"));
     delay(100);
 
-
     //Push the PTT
     digitalWrite(this->_pinPTT, HIGH);   //There's a delay of about 37mS from PTT going high to when RF is emitted.
   } else {
@@ -138,10 +137,9 @@ void Modem::PTT(bool tx) {
     digitalWrite(this->_pinEnable, LOW);
 
     pinMode(this->_pinTxAudio, INPUT);    //Configure as an input until we need it. This will save power.
-
   }
-
 }
+
 
 /**
  * @brief  Sets the debug level for the APRS object.
@@ -150,8 +148,6 @@ void Modem::PTT(bool tx) {
 void Modem::setDebugLevel(uint8_t level) {
   this->_debugLevel = level;
 }
-
-
 
 
 /**
@@ -262,7 +258,6 @@ void Modem::packetAppend(float f) {
   this->packetAppend('.'); // print the decimal point
   int iDec = (f - int(f)) * 10;    //calculate the decimal point portion
   this->packetAppend((long)iDec, false) ; 
-  
 }
 
 
@@ -376,7 +371,6 @@ void Modem::packetSend() {
 
   _iSZLen = -1;      //reset back to a clean buffer
 }
-
 
 
 /**
@@ -554,8 +548,8 @@ bool Modem::getNextBit() {
   }
 
   return bOut;  
-  
 }
+
 
 /**
  * @brief  Returns the current state of the noBitStuffing flag.  This flag is used to indicate whether or not to stuff an extra bit into the packet because of an excessive number of 1's in a row.
@@ -565,8 +559,6 @@ bool Modem::getNextBit() {
 bool Modem::noBitStuffing() {
   return this->_bNoStuffing;  
 }
-
-
 
 
 /**
@@ -617,6 +609,7 @@ void Modem::configTimers() {
   OCR2A = 0xc8;    //Overflow counter for Timer2. This needs to be kept in sync with the maximum value in the arySin table.
 }
 
+
 /**
  * @brief  Starts and stops the Timer1 ISR routine.
  * @param  run: A boolean indicating to either start or stop the ISR routine.
@@ -635,6 +628,7 @@ void Modem::setTxDelay(unsigned int txDelay) {
   this->_txDelay = txDelay;
 }
 
+
 /**
  * @brief  Returns the pin number for the PTT line.
  * @return The pin number for the PTT line.
@@ -642,6 +636,3 @@ void Modem::setTxDelay(unsigned int txDelay) {
 uint8_t Modem::getPinTxAudio() {
   return this->_pinTxAudio;
 }
-
-
-

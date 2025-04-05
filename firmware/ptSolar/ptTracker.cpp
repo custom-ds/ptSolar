@@ -32,6 +32,7 @@ ptTracker::ptTracker(uint8_t pinLED, uint8_t pinPiezo, uint8_t pinBattery, uint8
     this->_annunciateMode = annunciateMode;
   }
 
+
 /**
  * @brief Annunciate a character via the LED and/or buzzer.
  * @param c The character to annunciate.
@@ -131,6 +132,7 @@ float ptTracker::readBatteryVoltage(bool bSerialOut) {
 
     return fVolts;
 }
+
 
 /**
  * @brief Annunciate a tone on the audio annunciator.

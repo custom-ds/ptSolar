@@ -82,6 +82,10 @@ bool bHasBurst;
 float fMaxAlt;
 
 
+/**
+ * @brief  The function that runs first before the main loop() function is called indefinitely.
+ * @note   This function is called once at startup and is used to initialize the board and set up the hardware.
+ */
 void setup() {
   Serial.begin(19200);
 
@@ -121,7 +125,12 @@ void setup() {
 
   iLastErrorTxMillis = millis();      //set a starting time for the potential error messages
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * @brief  Main loop for the program.  This is where the main logic of the program is executed.
+ * @note   This function will run continuously until the board is powered off or reset.
+ */
 void loop() {
 
   float fCurrentAlt, fSpeed, fMaxSpeed;
@@ -162,24 +171,6 @@ void loop() {
     Serial.println(F("Low Batt, no GPS"));
     delay(750);   //wait for about the amount of time that we'd normally spend grabbing a GPS reading
   }
-
-
-  // //Check to see if we've decoded a GPS packet recently.
-  // if ((GPSParser.LastDecodedMillis() + GPS_TIMEOUT_TIME) < millis()) {
-  //   //we haven't decoded anything from the GPS in 45 seconds - we have a problem here
-
-  //   if ((iLastErrorTxMillis + GPS_TIMEOUT_TIME) < millis()) {
-  //     //it's been 45 seconds since the last time that we transmitted an error - so transmit
-
-  //     Tracker.annunciate('g');
-  //     if (Config.RadioType == 1) initDRA818();    //Configure the transmitter to correct frequency
-  //     oTNC.xmitStart(Config.Destination, Config.DestinationSSID, Config.Callsign, Config.CallsignSSID, Config.Path1, Config.Path1SSID, Config.Path2, Config.Path2SSID, true);
-  //     oTNC.xmitString((char *)">Lost GPS for over 45 seconds!");
-  //     oTNC.xmitEnd();
-
-  //     iLastErrorTxMillis = millis();      //track the fact that we just transmitted
-  //   }
-  // }
 
 
 
@@ -333,7 +324,10 @@ void loop() {
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief sendPositionSingleLine - This function sends the position of the tracker in a single line format. It includes information such as GPS time, latitude, longitude, course, speed, altitude, and other telemetry data.
+ * @return void
+ */
 void sendPositionSingleLine() {
   char szTemp[15];    //largest string held should be the longitude
   int i;
@@ -454,6 +448,7 @@ void sendPositionSingleLine() {
   Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
 }
 
+
 /**
  * @brief showVersion - Displays the version of the firmware and configuration
  * @return void
@@ -466,7 +461,11 @@ void showVersion() {
   Serial.println(CONFIG_VERSION);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief doConfigMode - This function is used to enter the configuration mode of the tracker. There are diagnostic routines, and the ability to read/write the EEPROM settings.
+ * @return void
+ */
 void doConfigMode() {
   byte byTemp;
 
@@ -628,12 +627,10 @@ void doConfigMode() {
 }
 
 
-
-
-
-
-
 //------------------------------------------ Functions and Timers  for the internal modulation ------------------------------------------
+/**
+ * @brief ISR - This is the interrupt service routine for the timer.  It is used to generate the audio tones for the VHF transmitter using the AX.25 protocol.
+ */
 ISR(TIMER1_COMPA_vect) {
   static uint8_t iStuffZero = 0;
   static bool bStuffBit = false;

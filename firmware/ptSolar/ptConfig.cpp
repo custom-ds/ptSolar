@@ -48,6 +48,8 @@ void ptConfig::readEEPROM() {
         this->setDefaultConfig();
     }
 }
+
+
 /**
  * @brief  Write the default configuration to the EEPROM.
  * @note   Used when the EEPROM is not initialized or has been corrupted. Checksum is based on the string inside of _config.Callsign.
@@ -121,7 +123,6 @@ void ptConfig::writeEEPROM() {
 }
 
 
-
 /**
  * @brief Reads in serial line data from the PC until it finds a tab (0x09) or an End of Transmission (0x04) character.
  * @param szParam - The array to store the incoming data while it's being collected. This parameter is by reference and will be modified.
@@ -156,6 +157,7 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
     Serial.println(F("Timeout"));
   }
   
+
   /**
    * @brief Reads in the configuration data from the PC and loads it into the Config UDT.
    * @return True if the configuration data was successfully read in.  False if there was an error.
@@ -347,6 +349,7 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
     }
     return false;
   }
+  
   
   /** 
    * @brief Sends the configuration data to the PC so that the configuration can be verified and managed.
