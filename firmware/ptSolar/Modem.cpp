@@ -209,11 +209,9 @@ void Modem::packetHeader(char *szDest, char destSSID, char *szCall, char callSSI
     //this is the end of the callsign, there was no Paths
     this->packetAppend((char)((callSSID << 1) | 0x01));    //flag the last bit with a 1 to indicate end of string
   }
-
   
   this->packetAppend((char)0x03);    //Control Byte
   this->packetAppend((char)0xF0);    //PID    
-
 }
 
 
@@ -245,10 +243,9 @@ void Modem::packetAppend(char c) {
 /**
  * @brief Appends a float to the packet buffer.  This function will append the float to the packet buffer, and the packet will be transmitted when the packetSend() function is called.
  * @param f The float to append to the packet buffer.
+ * @note  This is output a positive or negative float, with a single decimal point. Note that sprintf() does not support floats, so this function is a workaround.
  */
 void Modem::packetAppend(float f) {
-  //prints a float to the TNC, with a single decimal point of resolution.  Sufficient for voltages and temperatures.
-  
   if (f < 0) {
     this->packetAppend('-');    //negative sign
     f = f * -1;        //convert the negative number to positive for the rest of the processing
@@ -264,84 +261,14 @@ void Modem::packetAppend(float f) {
 /**
  * @brief Appends a long to the packet buffer.  This function will append the long to the packet buffer, and the packet will be transmitted when the packetSend() function is called.
  * @param lNumToSend The long to append to the packet buffer.
- * @param bLeadingZero A boolean indicating whether or not to pad the number with leading zeros.
+ * @param bLeadingZero A boolean indicating whether or not to pad the number with leading zeros. If padded, the number will be 6 digits long.
  */
 void Modem::packetAppend(long lNumToSend, bool bLeadingZero) {
-//This function writes a long numeric data type to the packet, zero padded to 6 digits (for the /A= Altitude report
-  int iCnt = 0;
-  
-  iCnt = 0;
-  while (lNumToSend >= 100000) {
-    lNumToSend -= 100000;
-    iCnt++;
-  }
-  if (iCnt == 0) {
-    if (bLeadingZero == true) {
-      this->packetAppend('0');
-    }
-  } else {
-    this->packetAppend((char)(iCnt + 48));
-    bLeadingZero = true;    //we've sent a digit, so now always send subsequent zeros
-  }
-  
-  iCnt = 0;
-  while (lNumToSend >= 10000) {
-    lNumToSend -= 10000;
-    iCnt++;
-  }
+  char szTemp[8];
+  if (bLeadingZero)  sprintf(szTemp, "%06d", lNumToSend);    //convert the number to a string
+  else sprintf(szTemp, "%d", lNumToSend);    //convert the number to a string
 
-  if (iCnt == 0) {
-    if (bLeadingZero == true) {
-      this->packetAppend('0');
-    }
-  } else {
-    this->packetAppend((char)(iCnt + 48));
-    bLeadingZero = true;    //we've sent a digit, so now always send subsequent zeros
-  }
-  
-  iCnt = 0;
-  while (lNumToSend >= 1000) {
-    lNumToSend -= 1000;
-    iCnt++;
-  }
-  if (iCnt == 0) {
-    if (bLeadingZero == true) {
-      this->packetAppend('0');
-    }
-  } else {
-    this->packetAppend((char)(iCnt + 48));
-    bLeadingZero = true;    //we've sent a digit, so now always send subsequent zeros
-  }
-  
-  iCnt = 0;
-  while (lNumToSend >= 100) {
-    lNumToSend -= 100;
-    iCnt++;
-  }
-  if (iCnt == 0) {
-    if (bLeadingZero == true) {
-      this->packetAppend('0');
-    }
-  } else {
-    this->packetAppend((char)(iCnt + 48));
-    bLeadingZero = true;    //we've sent a digit, so now always send subsequent zeros
-  }
-  
-  iCnt = 0;
-  while (lNumToSend >= 10) {
-    lNumToSend -= 10;
-    iCnt++;
-  }
-  if (iCnt == 0) {
-    if (bLeadingZero == true) {
-      this->packetAppend('0');
-    }
-  } else {
-    this->packetAppend((char)(iCnt + 48));
-    bLeadingZero = true;    //we've sent a digit, so now always send subsequent zeros
-  }
-  
-  this->packetAppend((char)(lNumToSend + 48));        //always send the ones digit
+  this->packetAppend(szTemp);    //append the string to the packet buffer
 }
 
 
