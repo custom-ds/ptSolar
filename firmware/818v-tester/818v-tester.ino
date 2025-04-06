@@ -36,14 +36,14 @@ ptTracker Tracker(PIN_LED, PIN_AUDIO, PIN_ANALOG_BATTERY, 2);    //Object that m
 Modem Aprs(PIN_DRA_EN, PIN_PTT_OUT, PIN_AUDIO_OUT, PIN_DRA_TX, PIN_DRA_RX);;            //Object that assembles the packets for the TNC and transmits them
 
 
-
+/**
+ * @brief  The function that runs first before the main loop() function is called indefinitely.
+ * @note   This function is called once at startup and is used to initialize the board and set up the hardware.
+ */
 void setup() {
   Serial.begin(19200);
-  
 
   Aprs.setDebugLevel(2);
-
-  
 
   //Configure the Misc Pins
   pinMode(PIN_LED, OUTPUT);
@@ -51,12 +51,13 @@ void setup() {
   
   Serial.begin(19200);
   Serial.println("ptSolar Test Fixture for troubleshooting SA818V Transmit Module");
-
-
-
-
 }
 
+
+/**
+ * @brief  Main loop for the program.  This is where the main logic of the program is executed.
+ * @note   This function will run continuously until the board is powered off or reset.
+ */
 void loop() {
 
   char Callsign[7];    //6 digit callsign + Null
@@ -79,12 +80,11 @@ void loop() {
 
   char Path2SSID = '0';
 
-
-
-  Serial.println("Transmitting a APRS packets");
+  Serial.println("Transmitting an APRS packets");
 
   for (int i=1;i<=10;i++) {
 
+    Aprs.setCourtesyTone(true);    //Set the courtesy tone flag
     Aprs.packetHeader(Destination, DestinationSSID, Callsign, CallsignSSID, Path1, Path1SSID, Path2, Path2SSID, true);
     Aprs.packetAppend((char *)">Project Traveler ptSolar Flight Computer ");
     Aprs.packetAppend((long)i, false);
@@ -102,38 +102,40 @@ void loop() {
 
   Aprs.sendTestDiagnotics();   //Send a test tone to the transmitter.  This function is used to test the transmitter and the audio path.
   delay(DELAY_BETWEEN);   //wait X seconds and repeat
-
-
 }
-
-/*
-// Define the ISR
-ISR(TIMER1_COMPA_vect) {
-  Serial.println("a");
-    aprs::isr();    //Call the static ISR
-}
-*/
 
 
 //------------------------------------------ Functions and Timers  for the internal modulation ------------------------------------------
+/**
+ * @brief ISR - This is the interrupt service routine for the timer.  It is used to generate the audio tones for the VHF transmitter using the AX.25 protocol.
+ */
 ISR(TIMER1_COMPA_vect) {
   static uint8_t iStuffZero = 0;
   static bool bStuffBit = false;
-  static uint8_t iRateGen;
+  static uint16_t iRateGen = 1;
   static uint16_t iTonePhase = 0;      //two byte variable.  The highByte contains the element in arySine that should be output'ed
-  static bool bToneHigh = false;
+  static uint8_t toneHigh = 0;
 
   // digitalWrite(PIN_LED, HIGH);   //Uncomment for troubleshooting ISR Timing
 
 
   //increment the phase counter.  It will overflow automatically at > 65535
-  if (bToneHigh) { 
-    iTonePhase += Modem::TONE_HIGH_STEPS_PER_TICK;
-  } else { 
-    iTonePhase += Modem::TONE_LOW_STEPS_PER_TICK; 
+  switch (toneHigh) {
+    case 0:
+      iTonePhase += Modem::TONE_LOW_STEPS_PER_TICK; 
+      break;
+    case 1:
+      iTonePhase += Modem::TONE_HIGH_STEPS_PER_TICK;
+      break;
+    case 2:
+      iTonePhase += Modem::TONE_COURTESY_STEPS_PER_TICK;    //courtesy chirp
+      break;
+    default:
+      iTonePhase = Modem::TONE_LOW_STEPS_PER_TICK; 
+      break;
   }
-  OCR2B = pgm_read_byte(&arySin[highByte(iTonePhase)]);   //analogWrite to PIN PD3, directly using the OCR register
-  //OCR2B = Aprs.getDACValue(highByte(iTonePhase));   //analogWrite to PIN PD3, directly using the OCR register
+  
+  OCR2B = Aprs.getDACValue(highByte(iTonePhase));   //analogWrite to PIN PD3, directly using the OCR register
 
   iRateGen--;
   if (iRateGen == 0) {
@@ -141,29 +143,40 @@ ISR(TIMER1_COMPA_vect) {
 
     if (bStuffBit) {
       //we hit the stuffing counter  - we don't need to get the next bit yet, just change the tone and send one bit
-      bToneHigh = !bToneHigh;
+      toneHigh = !toneHigh;
       iStuffZero = 0;
 
       bStuffBit = false;    //reset this so we don't keep stuffing
-
+      iRateGen = Modem::BAUD_GENERATOR_COUNT;  
     } else {
       //this is just a normal bit - grab the next bit from the szString
 
-      if (Aprs.getNextBit()) {
-        //it's a 1, so send the same tone...
-        iStuffZero++;      //increament the stuffing counter
+      switch(Aprs.getNextBit()) {
+        case 0:
+          //we only flip the output state if we have a zero
+          toneHigh = !toneHigh;   //Flip Bit
+          iStuffZero = 0;
+          iRateGen = Modem::BAUD_GENERATOR_COUNT;  
+          break;     
+        case 1:
+          //it's a 1, so send the same tone...
+          iStuffZero++;      //increament the stuffing counter
 
-        //if there's been 5 in a row, then we need to stuff an extra bit in, and change the tone for that one
-        if (iStuffZero == 5 && !Aprs.noBitStuffing()) {
-          bStuffBit = true;      //once we hit five, we let this fifth (sixth?) one go, then we set a flag to flip the tone and send a bogus extra bit next time
-        }
-      } else {
-        //we only flip the output state if we have a zero
-        bToneHigh = !bToneHigh;   //Flip Bit
-        iStuffZero = 0;        
-      }
+          //if there's been 5 in a row, then we need to stuff an extra bit in, and change the tone for that one
+          if (iStuffZero == 5 && !Aprs.noBitStuffing()) {
+            bStuffBit = true;      //once we hit five, we let this fifth (sixth?) one go, then we set a flag to flip the tone and send a bogus extra bit next time
+          }
+          iRateGen = Modem::BAUD_GENERATOR_COUNT;  
+          break;
+        case 2:
+          //this is a special case - we need to send a courtesy tone, so set the flag and break out of the loop
+          toneHigh = 2;
+          bStuffBit = false;
+          iRateGen = Modem::COURTESY_TONE_COUNT;  
+          break;
+      } 
     }
-    iRateGen = Modem::BAUD_GENERATOR_COUNT;  
+    
   }
   //digitalWrite(PIN_LED, LOW);   //Uncomment for troubleshooting ISR Timing
 }

@@ -73,11 +73,13 @@ class Modem {
 
     void sendTestDiagnotics();
 
-    bool getNextBit();       //Called from the ISR routine. Must be public for now
+    uint8_t getNextBit();       //Called from the ISR routine. Must be public for now
     bool noBitStuffing();    //Called from the ISR routine. Must be public for now
 
     void setDebugLevel(uint8_t level);
     void setTxDelay(unsigned int txDelay);
+    void setCourtesyTone(bool tone) { _courtesyTone = tone; }    //Set the courtesy tone flag
+
     uint8_t getPinTxAudio();
 
     inline uint8_t getDACValue(uint8_t iPhase) {
@@ -87,10 +89,14 @@ class Modem {
 
 
 	  //Parameters for the Numerically Controlled Oscillator NCO. See notes in the ConfigureTimers() function for details
-    static const uint8_t BAUD_GENERATOR_COUNT = 22;
+    static const uint16_t BAUD_GENERATOR_COUNT = 22;
+    static const uint16_t COURTESY_TONE_COUNT = 4000;
+
     static const uint16_t TIMER1_OCR = 303;
     static const uint16_t TONE_HIGH_STEPS_PER_TICK = 5461;		//2200Hz Tone
     static const uint16_t TONE_LOW_STEPS_PER_TICK = 2979; 		//1200Hz Tone
+    static const uint16_t TONE_COURTESY_STEPS_PER_TICK = 4220; 		//1700Hz Courtesy Tone
+
 
   private:
     // Private Variables
@@ -101,6 +107,8 @@ class Modem {
     uint8_t _pinSerialRx;
 
     uint8_t _debugLevel;
+
+    bool _courtesyTone = false;    //Flag to indicate if the courtesy tone is enabled or not.  This is used to determine if the courtesy tone should be sent or not.
 
     char _szTxFreq[9];    //array to hold the transmit frequency
     char _szRxFreq[9];    //array to hold the receive frequency

@@ -365,7 +365,7 @@ void Modem::packetSend() {
   this->timer1ISR(true);
 
   //wait for the state machine to get to a State 5, which is when it shuts down the transmitter.
-  while (_iTxState != 5) {
+  while (_iTxState != 6) {
     delay(100);    //just wait patiently until the packet is done
   }
 
@@ -382,12 +382,12 @@ void Modem::sendTestDiagnotics() {
   this->PTT(true);
   delay(DIAGNOSTIC_DELAY);   //deadkey before starting the tones.
 
-  this->_iTxState = 11;    //set the state to 11 to indicate a constant test tone
+  this->_iTxState = 12;    //set the state to 12 to indicate a constant test tone. Use 12 because it resets if there was previously a courtesy tone.
   this->timer1ISR(true);
   delay(DIAGNOSTIC_DELAY);
   delay(DIAGNOSTIC_DELAY);
 
-  //Change to the high tone
+  //Swap tones
   this->_iTxState = 12;    //temporarily set the state to 12 to flip the tone to the opposite.
   delay(DIAGNOSTIC_DELAY);
   delay(DIAGNOSTIC_DELAY);
@@ -426,9 +426,9 @@ void Modem::calcCRC(bool bit) {
  * @brief  The main component of the transmitting State Machine. After a packetSend() command is sent, this function gets called repeatedly from the ISR timer routine to output the packet bit-by-bit..
  * @return The next bit in the packet to be transmitted.
  */
-bool Modem::getNextBit() {
+uint8_t Modem::getNextBit() {
   static int iRotatePos = 0;
-  bool bOut = false;
+  uint8_t bOut = 0;
   
 
   switch (this->_iTxState) {
@@ -516,34 +516,53 @@ bool Modem::getNextBit() {
 
 
   case 5:
-    //done - shut the transmitter down
-    bOut = true;    //bogus bit so we have something to return.  Should be a moot point, since the ISR is shutting down.
+    //done - shut the transmitter down unless we need a courtesy tone beep
+    
+    this->_iTxState = 6;    //set the state to 6 to indicate a courtesy tone
     iRotatePos = 0;    //reset to get ready for next byte
+
+    if (this->_courtesyTone) {
+      //send a courtesy tone
+      bOut = 2;
+    } else {
+      this->timer1ISR(false);    //stop the timer
+      
+      //Unkey the transmitter
+      this->PTT(false);
+      bOut = 1;
+    }
+    
+    
+    
+  
+    break;
+  case 6:
+    //Shut down the transmitter following a courtesy tone
+
     this->timer1ISR(false);    //stop the timer
     
     //Unkey the transmitter
     this->PTT(false);
-  
+    bOut = 1;
     break;
-  
   case 11:
     //Send a constant tone
     this->_bNoStuffing = true;
-    bOut = true;    //send high which means stay with whatever tone was used last
+    bOut = 1;    //send high which means stay with whatever tone was used last
     break;
   case 12:
     //swap the tone
-    bOut = false;    //swap the tone
+    bOut = 0;    //swap the tone
     this->_iTxState = 11;    //After it's been swapped, go back to the constant tone
     break;
   case 13:
     //alternate the tones
-    bOut = false;    //send a low, which means switch between high and low tones repeatedly
+    bOut = 0;    //send a low, which means switch between high and low tones repeatedly
     break;
 
   default:
     //this should never happen, but if it does, set to state 5 to shut down the transmitter
-    this->_iTxState = 5;
+    this->_iTxState = 6;
     bOut = true;
   }
 
