@@ -1,0 +1,8 @@
+### Footprint positions - created on 2025-03-27T17:38:55-0500 ###
+### Printed by KiCad version 9.0.0
+## Unit = mm, Angle = deg.
+## Side : bottom
+# Ref     Val       Package                         PosX       PosY       Rot  Side
+C1        6V_1F     CDS_CSP_Super_Cap_8mm_dia   160.2500   -76.7500  180.0000  bottom
+U3        SA818S-V  DRA818_SA818                152.5650  -113.8600    0.0000  bottom
+## End

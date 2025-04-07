@@ -22,7 +22,7 @@
 "R1","47","~","Resistor_SMD:R_2512_6332Metric","1","","YAG3404CT-ND","C513678"
 "R2","100k","~","Resistor_SMD:R_0805_2012Metric","1","","311-100KCRCT-ND","C96346"
 "R3","22k","~","Resistor_SMD:R_0805_2012Metric","1","","311-22KARTR-ND","C114566"
-"R4,R5,R17","1k","~","Resistor_SMD:R_0805_2012Metric","3","","311-1.0KARCT-ND","C95781"
+"R4,R5,R17,R22","1k","~","Resistor_SMD:R_0805_2012Metric","4","","311-1.0KARCT-ND","C95781"
 "R6","1M","~","Resistor_SMD:R_0805_2012Metric","1","","311-1.0MARCT-ND","C107700"
 "R7,R10,R11,R12,R13,R14,R15,R18,R19,R20,R21","10k","~","Resistor_SMD:R_0805_2012Metric","11","","311-10KARCT-ND","C110775"
 "R8,R9,R16","4.7k","~","Resistor_SMD:R_0805_2012Metric","3","","311-4.7KARCT-ND","C60816"
