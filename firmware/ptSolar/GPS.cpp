@@ -31,10 +31,12 @@ GPS::GPS(uint8_t pinGPSRx, uint8_t pinGPSTx, uint8_t pinGPSEnable) {
 	this->_pinGPSTx = pinGPSTx;
 	this->_pinGPSEnable = pinGPSEnable;
 
-	//Set the pin modes
-	pinMode(this->_pinGPSEnable, OUTPUT);
-	digitalWrite(this->_pinGPSEnable, LOW);    //disable the GPS until we're ready
-	
+	//Configure the Enable pin, if there's an enable pin defined as non-zero.
+	if (this->_pinGPSEnable) {
+		pinMode(this->_pinGPSEnable, OUTPUT);
+		digitalWrite(this->_pinGPSEnable, LOW);    //disable the GPS until we're ready
+	}
+
 	//Constructor - initialize the vars
 	_szTemp[0] = 0;
 	_iTempPtr = 0;
@@ -75,7 +77,7 @@ void GPS::initGPS() {
 	if (this->_GPSType == 1) {
 		if (this->_debugLevel > 0) Serial.println(F("Init UBlox"));
 
-		//digitalWrite(this->_pinGPSEnable, HIGH);    //Enable the GPS		-- not currently implemented in the ublox GPS
+		if (this->_pinGPSEnable) digitalWrite(this->_pinGPSEnable, HIGH);    //Enable the GPS
 
 
 		const byte setdm6[] = {0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00,
@@ -133,7 +135,7 @@ void GPS::initGPS() {
 				}
 			}
 		}
-		//digitalWrite(this->_pinGPSEnable, LOW);    //Disable the GPS		-- not currently implemented in the ublox GPS
+		if (this->_pinGPSEnable) digitalWrite(this->_pinGPSEnable, LOW);    //Disable the GPS
 	}
 
 
@@ -141,15 +143,17 @@ void GPS::initGPS() {
 	if (this->_GPSType ==2) {
 		if (this->_debugLevel > 0) Serial.println(F("Init ATGM332"));
 
-		digitalWrite(this->_pinGPSEnable, HIGH);    //Enable the GPS
+		if (this->_pinGPSEnable) digitalWrite(this->_pinGPSEnable, HIGH);    //Enable the GPS
 
 		if (this->_debugLevel > 0) Serial.println(F("Config GGA/RMC"));
 		Serial.println(F("$PCAS03,1,0,0,0,1,0,0,0,0*1E")); // turns on only $GNGGA and $GNRMC (1 sec)
 		delay(100);
+
 		if (this->_debugLevel > 1) Serial.println(F("Enable air"));
 		Serial.println(F("$PCAS11,5*18")); // Airborne mode on ATM336H-5N GPS??
 		delay(100);
 
+		if (this->_pinGPSEnable) digitalWrite(this->_pinGPSEnable, LOW);    //Disable the GPS
 		
 	}
 
@@ -167,7 +171,7 @@ void GPS::collectGPSStrings() {
 
 	
 
-	digitalWrite(this->_pinGPSEnable, HIGH);    //enable the GPS
+	if (this->_pinGPSEnable) digitalWrite(this->_pinGPSEnable, HIGH);    //enable the GPS
 
 	this->clearInputBuffer();
 	this->clearSentenceFlags();      //clear out the temporary flags to indicate that the new sentences have come in
@@ -195,7 +199,7 @@ void GPS::collectGPSStrings() {
 	}
 
 
-	digitalWrite(this->_pinGPSEnable, LOW);    //shut the GPS back down
+	if (this->_pinGPSEnable) digitalWrite(this->_pinGPSEnable, LOW);    //shut the GPS back down
 	GPS.end();	//close the serial port to the GPS so it doens't draw excess current
 	return;
 }
