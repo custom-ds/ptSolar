@@ -265,7 +265,7 @@ void Modem::packetAppend(float f) {
  */
 void Modem::packetAppend(long lNumToSend, bool bLeadingZero) {
   char szTemp[8];
-  if (bLeadingZero)  sprintf(szTemp, "%06d", lNumToSend);    //convert the number to a string
+  if (bLeadingZero) sprintf(szTemp, "%06d", lNumToSend);    //convert the number to a string
   else sprintf(szTemp, "%d", lNumToSend);    //convert the number to a string
 
   this->packetAppend(szTemp);    //append the string to the packet buffer

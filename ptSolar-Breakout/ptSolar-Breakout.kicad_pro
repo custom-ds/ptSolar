@@ -523,7 +523,7 @@
       "idf": "",
       "netlist": "",
       "plot": "Current/",
-      "pos_files": "",
+      "pos_files": "Current/",
       "specctra_dsn": "",
       "step": "",
       "svg": "",
@@ -533,7 +533,7 @@
   },
   "schematic": {
     "annotate_start_num": 0,
-    "bom_export_filename": "Current\\ptSolar-Breakout.csv",
+    "bom_export_filename": "Current\\Bill of Materials.csv",
     "bom_fmt_presets": [],
     "bom_fmt_settings": {
       "field_delimiter": ",",
@@ -613,6 +613,18 @@
           "label": "Description",
           "name": "Description",
           "show": false
+        },
+        {
+          "group_by": false,
+          "label": "LSCC",
+          "name": "LSCC",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "LCSC",
+          "name": "LCSC",
+          "show": true
         }
       ],
       "filter_string": "",
