@@ -37,6 +37,8 @@ class GPS
     GPS(uint8_t pinGPSRx, uint8_t pinGPSTx, uint8_t pinGPSEnable);
     void initGPS();
     void collectGPSStrings();
+    void disableGPS();
+    void enableGPS(bool initGPS);    
 
     void clearInputBuffer();
     void addChar(char c);
@@ -126,8 +128,9 @@ class GPS
     void setDebugLevel(uint8_t level) { _debugLevel = level; }
     void setGPSType(uint8_t type) { _GPSType = type; }
 
+
   
-    bool GPS::getAPRSFrequency(char *sz);
+    bool getAPRSFrequency(char *sz);
 
 	private:
 		void parseGGA();

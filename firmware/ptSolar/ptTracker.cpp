@@ -141,9 +141,13 @@ float ptTracker::readBatteryVoltage(bool bSerialOut) {
  */
 void ptTracker::audioTone(int length) {
 
-    //Set the pins to outputs
-    pinMode(this->_pinLED, OUTPUT);  
-    pinMode(this->_pinPiezo, OUTPUT);
+    //Set the pins to outputs if they are needed for the annunciation mode selected
+    if (this->_annunciateMode & 0x01) {
+        pinMode(this->_pinLED, OUTPUT);
+    }
+    if (this->_annunciateMode & 0x02) {
+        pinMode(this->_pinPiezo, OUTPUT);
+    }
 
     if (this->_annunciateMode & 0x01) {
         digitalWrite(this->_pinLED, HIGH);

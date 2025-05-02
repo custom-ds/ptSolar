@@ -20,7 +20,7 @@ Before programming for the first time, the ATmega fuses must be set.
 */
 
 
-#define FIRMWARE_VERSION "0.9.9"
+#define FIRMWARE_VERSION "0.9.10"
 #define CONFIG_PROMPT "\n\n# "
 
 
@@ -119,7 +119,7 @@ void setup() {
   
 
   //init the GPS into high altitude mode (Dynamic Model 6 – Airborne < 1g)
-  GPSParser.initGPS();        //Initializes the GPS
+  //GPSParser.initGPS();        //Initializes the GPS
   GPSParser.setDebugNEMA(true);    ///TODO: Need to pull this from Configuration
   GPSParser.setDebugLevel(2);    //Get full verbose output from the GPS
 
@@ -153,7 +153,8 @@ void loop() {
 
 
   //check to see if we have sufficient battery to run the GPS
-  if (battMillivolts > Config.getVoltThreshGPS()) {
+  if (battMillivolts >= Config.getVoltThreshGPS()) {
+    GPSParser.enableGPS(false);    //enable the GPS module if it's not already
     GPSParser.collectGPSStrings();
 
     fCurrentAlt = GPSParser.Altitude();        //get the current altitude
@@ -168,6 +169,14 @@ void loop() {
       }
     }
   } else {
+
+    //See if the Battery has dropped 100mV below the threshold.  If so, disable the GPS until the battery comes back up
+    if (battMillivolts < (Config.getVoltThreshGPS() - 100)) {
+      //we don't have enough battery to run the GPS - disable it
+      Serial.println(F("Disabling GPS"));
+      GPSParser.disableGPS();
+    }
+
     Serial.println(F("Low Batt, no GPS"));
     delay(750);   //wait for about the amount of time that we'd normally spend grabbing a GPS reading
   }
@@ -286,6 +295,9 @@ void loop() {
 
   if (bXmit) {
     bool bXmitPermitted = true;    //assume that we can transmit
+
+    //Disable the GPS to save power
+    GPSParser.disableGPS();    //disable the GPS module
 
     //Determine the transmit/receive frequency to use
     if (Config.getUseGlobalFreq()) {
@@ -540,7 +552,10 @@ void doConfigMode() {
         byTemp = Serial.read();
 
         if (byTemp >= '1' && byTemp <= '5') {
+          Aprs.setTxFrequency(Config.getRadioFreqTx());    //set the frequency to transmit on
+          Aprs.setRxFrequency(Config.getRadioFreqRx());    //set the frequency to receive on
           Aprs.setTxDelay(Config.getRadioTxDelay());
+
           Tracker.annunciate('t');
           
           Aprs.PTT(true);   //configures the SA818 as part of the transmit process.
@@ -576,6 +591,10 @@ void doConfigMode() {
       if (byTemp == 'P' || byTemp == 'p') {
         //Send a test packet
         Serial.println(F("Test Packet"));
+        Aprs.setTxFrequency(Config.getRadioFreqTx());    //set the frequency to transmit on
+        Aprs.setRxFrequency(Config.getRadioFreqRx());    //set the frequency to receive on
+        Aprs.setTxDelay(Config.getRadioTxDelay());
+
         Aprs.packetHeader(Config.getDestination(), Config.getDestinationSSID(), Config.getCallsign(), Config.getCallsignSSID(), Config.getPath1(), Config.getPath1SSID(), Config.getPath2(), Config.getPath2SSID(), (GPSParser.Altitude() < Config.getDisablePathAboveAltitude()));
         Aprs.packetAppend((char *)">Project Traveler Test");
         Tracker.readBatteryVoltage(true);  //read the battery voltage before the transmission
@@ -599,6 +618,9 @@ void doConfigMode() {
 
       if (byTemp == 'T' || byTemp == 't') {
         //exercise the transmitter
+        Aprs.setTxFrequency(Config.getRadioFreqTx());    //set the frequency to transmit on
+        Aprs.setRxFrequency(Config.getRadioFreqRx());    //set the frequency to receive on
+        Aprs.setTxDelay(Config.getRadioTxDelay());
         Aprs.sendTestDiagnotics();
       }      
 
