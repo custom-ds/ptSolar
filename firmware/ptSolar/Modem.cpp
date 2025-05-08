@@ -131,11 +131,6 @@ void Modem::PTT(bool tx) {
 
     //Push the PTT
     digitalWrite(this->_pinPTT, HIGH);   //There's a delay of about 37mS from PTT going high to when RF is emitted.
-
-    DRA.end();    //close the serial port to the 818V module so it doesn't draw excess current
-    pinMode(this->_pinSerialTx, INPUT);    //set the Tx pin back to input mode so it doesn't draw excess current
-    pinMode(this->_pinSerialRx, INPUT);    //set the Rx pin back to input mode so it doesn't draw excess current
-        
   } else {
     //End of transmission. stop the PTT and shut down the transmitter
     digitalWrite(this->_pinPTT, LOW);
@@ -270,8 +265,8 @@ void Modem::packetAppend(float f) {
  */
 void Modem::packetAppend(long lNumToSend, bool bLeadingZero) {
   char szTemp[8];
-  if (bLeadingZero) sprintf(szTemp, "%06d", lNumToSend);    //convert the number to a string
-  else sprintf(szTemp, "%d", lNumToSend);    //convert the number to a string
+  if (bLeadingZero)  sprintf(szTemp, "%06lu", lNumToSend);    //convert the number to a string
+  else sprintf(szTemp, "%lu", lNumToSend);    //convert the number to a string
 
   this->packetAppend(szTemp);    //append the string to the packet buffer
 }

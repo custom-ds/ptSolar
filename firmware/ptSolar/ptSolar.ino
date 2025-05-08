@@ -20,7 +20,7 @@ Before programming for the first time, the ATmega fuses must be set.
 */
 
 
-#define FIRMWARE_VERSION "0.9.10"
+#define FIRMWARE_VERSION "1.0.0"
 #define CONFIG_PROMPT "\n\n# "
 
 
