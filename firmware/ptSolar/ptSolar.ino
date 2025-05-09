@@ -118,8 +118,6 @@ void setup() {
   }
   
 
-  //init the GPS into high altitude mode (Dynamic Model 6 – Airborne < 1g)
-  //GPSParser.initGPS();        //Initializes the GPS
   GPSParser.setDebugNEMA(true);    ///TODO: Need to pull this from Configuration
   GPSParser.setDebugLevel(2);    //Get full verbose output from the GPS
 
@@ -154,7 +152,7 @@ void loop() {
 
   //check to see if we have sufficient battery to run the GPS
   if (battMillivolts >= Config.getVoltThreshGPS()) {
-    GPSParser.enableGPS(false);    //enable the GPS module if it's not already
+    GPSParser.enableGPS(true);    //enable the GPS module if it's not already. If it wasn't enabled, this will also initialize it.
     GPSParser.collectGPSStrings();
 
     fCurrentAlt = GPSParser.Altitude();        //get the current altitude
@@ -297,7 +295,7 @@ void loop() {
     bool bXmitPermitted = true;    //assume that we can transmit
 
     //Disable the GPS to save power
-    GPSParser.disableGPS();    //disable the GPS module
+    //GPSParser.disableGPS();    //disable the GPS module
 
     //Determine the transmit/receive frequency to use
     if (Config.getUseGlobalFreq()) {

@@ -24,6 +24,7 @@ You should have received a copy of the GNU General Public License along with thi
 #define _METERS_TO_FEET 3.2808399
 #define GPS_MAX_COLLECTION_TIME 3000    //number of millis to wait while collecting the two GPS strings.
 
+#define UNKNOWN_PIN 0xFF
 
 struct udtTime {
   int hh;
@@ -38,8 +39,8 @@ class GPS
     void initGPS();
     void collectGPSStrings();
     void disableGPS();
-    void enableGPS(bool initGPS);    
-
+    void enableGPS(bool initGPS);  
+    
     void clearInputBuffer();
     void addChar(char c);
     void getLatitude(char *sz);
@@ -138,6 +139,7 @@ class GPS
 		bool validateGPSSentence(char *szGPSSentence, int iNumCommas, int iMinLength);
 		void getString(char *ptrHaystack, char *ptrFound, int iMaxLength);
 	  char* skipToNext(char *ptr);
+    uint8_t getPinMode(uint8_t pin);
 	  
 	  
 		// properties
@@ -169,6 +171,7 @@ class GPS
 
     uint8_t _debugLevel;
     uint8_t _GPSType;    //0=Generic NMEA, 1=UBlox, 2=ATGM332D
+
 
 	};
 #endif

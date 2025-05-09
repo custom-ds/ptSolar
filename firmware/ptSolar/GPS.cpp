@@ -11,6 +11,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Version History:
+Version 2.0.0 - May 9, 2025 - Major rewrite to be more object oriented. Added support for ATGM332 GPS module.
 Version 1.0.4 - October 18, 2015 - Found bug where GPS latitude and longitude were exceeding the buffer.  Corrected and cleaned up some old code.
 Version 1.0.3 - October 7, 2015 - Eliminated excess Serial.print's.  Cleaned up old comments.
 Version 1.0.2 - April 27, 2015 - Added the possibility to capture GNGGA and GNRMC strings (instead of just GP***).
@@ -201,10 +202,29 @@ void GPS::collectGPSStrings() {
  * @note   This function is called when the GPS module is not in use.
  */
 void GPS::disableGPS() {
+
 	if (this->_pinGPSEnable) {
+		//see if the enable is already in output and low, and if the Tx and Rx pins are already in input mode.  If so, don't do anything.
+		if (this->getPinMode(this->_pinGPSEnable) == OUTPUT && digitalRead(this->_pinGPSEnable) == HIGH) {
+			//the output is already set to disabled
+
+			//check the Tx and Rx pins to see if they are already in input mode
+			if (this->getPinMode(this->_pinGPSTx) == INPUT && this->getPinMode(this->_pinGPSRx) == INPUT) {
+				//the Tx and Rx pins are already in input mode - don't do anything
+
+				Serial.println(F("GPS is disabled"));
+				return;
+			}
+		}
+
+		//something wasn't already disabled - disable the GPS module
+		Serial.println(F("Disable GPS"));
+
+
 		pinMode(this->_pinGPSEnable, OUTPUT);
 		digitalWrite(this->_pinGPSEnable, HIGH);    //shut the GPS back down (active low)
 	}
+
 	pinMode(this->_pinGPSTx, INPUT);	//set the GPS Tx pin back to input mode so it doesn't draw excess current
 	pinMode(this->_pinGPSRx, INPUT);	//set the GPS Rx pin back to input mode so it doesn't draw excess current
 }
@@ -216,7 +236,17 @@ void GPS::disableGPS() {
  * @note   This function is called when the GPS module is needed.
  */
 void GPS::enableGPS(bool initGPS) {
+
 	if (this->_pinGPSEnable) {
+		//see if the Enable pin is already in output and low, and if the Tx and Rx pins are already in input mode.  If so, don't do anything.
+		if (this->getPinMode(this->_pinGPSEnable) == OUTPUT && digitalRead(this->_pinGPSEnable) == LOW) {
+			//the output is already set to enabled
+			Serial.println(F("GPS is enabled"));
+			return;	//don't do anything - no need to init the GPS since it's already been done
+		}
+
+		Serial.println(F("Enable GPS"));
+		
 		pinMode(this->_pinGPSEnable, OUTPUT);
 		digitalWrite(this->_pinGPSEnable, LOW);    //enable the GPS (active low)
 	}
@@ -233,9 +263,9 @@ void GPS::enableGPS(bool initGPS) {
  */
 void GPS::clearInputBuffer() {
   //need to flush out the old data before importing new, or else you can wind up with odd combinations of old headers and new tails
-  _szTemp[0] = 0;
-  _iTempPtr = 0;
-  _bFoundStart = false;
+  this->_szTemp[0] = 0;
+  this->_iTempPtr = 0;
+  this->_bFoundStart = false;
 }
 
 
@@ -249,9 +279,9 @@ void GPS::addChar(char c) {
 	//first make sure we still have room in the _szTemp for another char (and null termiation)
 	if (_iTempPtr >= (_MAX_SENTENCE_LEN - 2)) {
 		//we're full and we apparently didn't find an end of string - throw the szTemp away and lets start over
-		_szTemp[0] = 0;
-		_iTempPtr = 0;
-		_bFoundStart = false;
+		this->_szTemp[0] = 0;
+		this->_iTempPtr = 0;
+		this->_bFoundStart = false;
 	}
 
 	if (this->_bFoundStart == false) {
@@ -262,8 +292,8 @@ void GPS::addChar(char c) {
 			this->_iTempPtr = 0;
 			this->_bFoundStart = true;
 			
-			_szTemp[_iTempPtr++] = c;
-			_szTemp[_iTempPtr] = 0;			//always make sure our resulting string is null terminated
+			this->_szTemp[_iTempPtr++] = c;
+			this->_szTemp[_iTempPtr] = 0;			//always make sure our resulting string is null terminated
 		}
 		//this was a start, so it couldn't have been the finish - just return;
 		
@@ -276,11 +306,10 @@ void GPS::addChar(char c) {
 			//this was probably a \r or \n, but could be some other sort of invalid (null or Control) char
 			
 			//look at the first few chars of the array to see if it's RMC or GGA.
-			if (_szTemp[1] == 'G' && (_szTemp[2] == 'P' || _szTemp[2] == 'N') && _szTemp[3] == 'R' && _szTemp[4] == 'M' && _szTemp[5] == 'C') {
+			if (_szTemp[1] == 'G' && (this->_szTemp[2] == 'P' || this->_szTemp[2] == 'N') && this->_szTemp[3] == 'R' && this->_szTemp[4] == 'M' && this->_szTemp[5] == 'C') {
 				//we have the start of an RMC string
 
-				if (this->_outputNEMA) Serial.println(_szTemp);		//dump the GPS sentence to the serial port if desired.
-
+				if (this->_outputNEMA) Serial.println(this->_szTemp);		//dump the GPS sentence to the serial port if desired.
 				this->_bRMCComplete = true;    //set a flag indicating that an RMC sentence has been received, therefore we have valid data
 
 				this->parseRMC();
@@ -288,14 +317,14 @@ void GPS::addChar(char c) {
 				this->_bGotNewRMC = true;      //set a temporary flag indicating that we got a new RMC sentence
 				this->_lastDecodedMillis = millis();    //keep track of the time when we last received a sentence
 			
-			} else if (_szTemp[1] == 'G' && (_szTemp[2] == 'P' || _szTemp[2] == 'N') && _szTemp[3] == 'G' && _szTemp[4] == 'G' && _szTemp[5] == 'A') {
+			} else if (_szTemp[1] == 'G' && (this->_szTemp[2] == 'P' || this->_szTemp[2] == 'N') && this->_szTemp[3] == 'G' && this->_szTemp[4] == 'G' && this->_szTemp[5] == 'A') {
 				//we have the start of an GGA string
 				
-				if (this->_outputNEMA) Serial.println(_szTemp);		//dump the GPS sentence to the serial port if desired.
-
-
+				if (this->_outputNEMA) Serial.println(this->_szTemp);		//dump the GPS sentence to the serial port if desired.
 				this->_bGGAComplete = true;
+
 				this->parseGGA();
+
 				this->_bGotNewGGA = true;      //set a temporary flag indicating that we got a new RMC sentence
 				this->_lastDecodedMillis = millis();    //keep track of the time when we last received a sentence
 			}
@@ -307,8 +336,8 @@ void GPS::addChar(char c) {
 			
 		} else {
 			//this is just a "normal char".  Add it to the array and quit
-			_szTemp[_iTempPtr++] = c;
-			_szTemp[_iTempPtr] = 0;			//always make sure our resulting string is null terminated
+			this->_szTemp[this->_iTempPtr++] = c;
+			this->_szTemp[this->_iTempPtr] = 0;			//always make sure our resulting string is null terminated
 			return;
 		}
 	}
@@ -326,10 +355,8 @@ void GPS::parseRMC() {
 //$GPRMC,224831,A,3805.5827,N,09755.0740,W,000.0,000.0,240806,005.9,E*65
 
 	char sz[9];			//temp var
-	
 	char* ptrTemp;
-	
-	ptrTemp = &_szTemp[7];			//set this pointer to the hours digit
+	ptrTemp = &this->_szTemp[7];			//set this pointer to the hours digit
 
 	
 	strncpy(sz, ptrTemp, 2);
@@ -346,7 +373,6 @@ void GPS::parseRMC() {
 	sz[2] = 0;		//null terminate the string
 	this->_currTime.ss = atoi(sz);
 	
-	
 	ptrTemp = this->skipToNext(ptrTemp);			//skip thru the rest of the chars in the time
 
 	//see if we have valid fix (A) or invalid (V)
@@ -360,11 +386,11 @@ void GPS::parseRMC() {
 
 
 	//get the Latitude
-	this->getString(ptrTemp, _szLatitude, _MAX_LATITUDE_LEN);
-  if (_szLatitude[0] == '\0') {
-    //the longitude was empty
-	  strcpy(_szLatitude, "0000.0000");
-  }
+	this->getString(ptrTemp, this->_szLatitude, _MAX_LATITUDE_LEN);
+	if (this->_szLatitude[0] == '\0') {
+		//the longitude was empty
+		strcpy(this->_szLatitude, "0000.0000");
+	}
 	ptrTemp = this->skipToNext(ptrTemp);
 
 	//get Latitude Hemisphere
@@ -379,10 +405,10 @@ void GPS::parseRMC() {
 
 	//get the Longitude
 	this->getString(ptrTemp, this->_szLongitude, _MAX_LONGITUDE_LEN);
-  if (this->_szLongitude[0] == '\0') {
-    //the longitude was empty
-	  strcpy(this->_szLongitude, "00000.0000");
-  }
+	if (this->_szLongitude[0] == '\0') {
+		//the longitude was empty
+		strcpy(this->_szLongitude, "00000.0000");
+	}
 	ptrTemp = this->skipToNext(ptrTemp);
 
 	//get Latitude Hemisphere
@@ -423,7 +449,7 @@ void GPS::parseGGA() {
 	
 	char* ptrTemp;
 	
-	ptrTemp = &_szTemp[7];			//set this pointer to the hours digit
+	ptrTemp = &this->_szTemp[7];			//set this pointer to the hours digit
 
 	
 	strncpy(sz, ptrTemp, 2);
@@ -443,11 +469,11 @@ void GPS::parseGGA() {
 	ptrTemp = this->skipToNext(ptrTemp);			//skip thru the rest of the chars in the time
 
 	//get the Latitude
-	getString(ptrTemp, _szLatitude, _MAX_LATITUDE_LEN);
-  if (this->_szLatitude[0] == '\0') {
-    //the longitude was empty
-    strcpy(this->_szLatitude, "0000.0000");
-  }
+	getString(ptrTemp, this->_szLatitude, _MAX_LATITUDE_LEN);
+	if (this->_szLatitude[0] == '\0') {
+		//the longitude was empty
+		strcpy(this->_szLatitude, "0000.0000");
+	}
 	ptrTemp = skipToNext(ptrTemp);
 
 	//get Latitude Hemisphere
@@ -462,10 +488,10 @@ void GPS::parseGGA() {
 
 	//get the Longitude
 	this->getString(ptrTemp, this->_szLongitude, _MAX_LONGITUDE_LEN);
-  if (this->_szLongitude[0] == '\0') {
-    //the longitude was empty
-	  strcpy(_szLongitude, "00000.0000");
-  }
+	if (this->_szLongitude[0] == '\0') {
+		//the longitude was empty
+		strcpy(_szLongitude, "00000.0000");
+	}
 	ptrTemp = this->skipToNext(ptrTemp);
 
 	//get Latitude Hemisphere
@@ -503,7 +529,6 @@ void GPS::parseGGA() {
  * @note    This function is used to extract substrings from GPS sentences.
  */
 void GPS::getString(char *ptrHaystack, char *ptrFound, int iMaxLength) {
-	//Extracts the string (up to iMaxLength) from the char*, and returns a pointer
 	
 	*ptrFound = '\0';			//be sure that the Found is null terminated even if we didn't find anything
 	
@@ -544,7 +569,6 @@ bool GPS::validateGPSSentence(char *szGPSSentence, int iNumCommas, int iMinLengt
 		
 	//we passed all of the tests - return true
 	return true;
-	
 }
 
 
@@ -565,6 +589,37 @@ char* GPS::skipToNext(char *ptr) {
 	if (*ptr == ',') ptr++;			//if we landed on a comma, advance one
 	return ptr;
 }
+
+
+/** 
+ * @brief  Returns the current pin mode of the specified pin.
+ * @param  pin - The pin number to check the mode of.
+ * @return The pin mode of the specified pin (INPUT, OUTPUT, INPUT_PULLUP, or UNKNOWN_PIN).
+ */
+uint8_t GPS::getPinMode(uint8_t pin) {
+	uint8_t bit = digitalPinToBitMask(pin);
+	uint8_t port = digitalPinToPort(pin);
+  
+	// I don't see an option for mega to return this, but whatever...
+	if (NOT_A_PIN == port) return UNKNOWN_PIN;
+  
+	// Is there a bit we can check?
+	if (0 == bit) return UNKNOWN_PIN;
+  
+	// Is there only a single bit set?
+	if (bit & bit - 1) return UNKNOWN_PIN;
+  
+	volatile uint8_t *reg, *out;
+	reg = portModeRegister(port);
+	out = portOutputRegister(port);
+  
+	if (*reg & bit)
+	  return OUTPUT;
+	else if (*out & bit)
+	  return INPUT_PULLUP;
+	else
+	  return INPUT;
+  }
 
 
 /**
