@@ -312,6 +312,8 @@ void GPS::addChar(char c) {
 				if (this->_outputNEMA) Serial.println(this->_szTemp);		//dump the GPS sentence to the serial port if desired.
 				this->_bRMCComplete = true;    //set a flag indicating that an RMC sentence has been received, therefore we have valid data
 
+				Serial.println(F("Validating RMC"));
+				this->validateGPSSentence(this->_szTemp, 12, 23);	//validate the GGA sentence to make sure it has the right number of commas and is long enough
 				this->parseRMC();
 
 				this->_bGotNewRMC = true;      //set a temporary flag indicating that we got a new RMC sentence
@@ -323,6 +325,8 @@ void GPS::addChar(char c) {
 				if (this->_outputNEMA) Serial.println(this->_szTemp);		//dump the GPS sentence to the serial port if desired.
 				this->_bGGAComplete = true;
 
+				Serial.println(F("Validating GGA"));
+				this->validateGPSSentence(this->_szTemp, 14, 30);	//validate the GGA sentence to make sure it has the right number of commas and is long enough
 				this->parseGGA();
 
 				this->_bGotNewGGA = true;      //set a temporary flag indicating that we got a new RMC sentence
@@ -559,14 +563,21 @@ bool GPS::validateGPSSentence(char *szGPSSentence, int iNumCommas, int iMinLengt
 	int iCommaCount = 0;
 	int iCharCount = 0;
 	
-	while (szGPSSentence[iCharCount] != '\0' && iCharCount < _MAX_SENTENCE_LEN) {
+	while (szGPSSentence[iCharCount] != '\0' && iCharCount < (_MAX_SENTENCE_LEN+10)) {		///TODO: Remove the +10 - this is just for debugging purposes
 		if (szGPSSentence[iCharCount] == ',') iCommaCount++;			//we found a comma, incre the counter
 		
 		iCharCount++;
 	}
-	if (iCharCount < iMinLength) return false;
-	if (iNumCommas != iCommaCount) return false;
-		
+	Serial.print("Chars: ");
+	Serial.println(iCharCount);
+	Serial.print("Commas: ");
+	Serial.println(iCommaCount);
+
+	if ((iCharCount < iMinLength) || (iNumCommas != iCommaCount)) {
+		Serial.println(F("Invalid"));
+		return false;
+	}
+	Serial.println(F("Valid"));
 	//we passed all of the tests - return true
 	return true;
 }

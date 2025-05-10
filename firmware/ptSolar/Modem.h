@@ -86,6 +86,8 @@ class Modem {
           if (iPhase & 0x80) return 100 + pgm_read_byte(&arySin[(iPhase & 0x7f)]);    //first half of the sine wave
           return 100 - pgm_read_byte(&arySin[(iPhase & 0x7f)]);    //second half of the sine wave
     }
+    inline unsigned long getLastTransmitMillis() { return _lastTransmitMillis; }
+
 
 
 	  //Parameters for the Numerically Controlled Oscillator NCO. See notes in the ConfigureTimers() function for details
@@ -105,6 +107,8 @@ class Modem {
     uint8_t _pinTxAudio;
     uint8_t _pinSerialTx;
     uint8_t _pinSerialRx;
+    unsigned long _lastTransmitMillis;
+
 
     uint8_t _debugLevel;
 

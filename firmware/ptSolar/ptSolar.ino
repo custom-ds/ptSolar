@@ -68,6 +68,9 @@ Before programming for the first time, the ATmega fuses must be set.
 #define DELAY_MS_BETWEEN_XMITS 1250
 #define METERS_TO_FEET 3.2808399
 
+//Debugging options
+#define XMIT_MILLIS true
+
 
 ptConfig Config;                                                                        //Configuration object
 ptTracker Tracker(PIN_LED, PIN_AUDIO, PIN_ANALOG_BATTERY, Config.getAnnounceMode());    //Object that manages the board-specific functions
@@ -76,8 +79,6 @@ Modem Aprs(PIN_DRA_EN, PIN_PTT_OUT, PIN_AUDIO_OUT, PIN_DRA_TX, PIN_DRA_RX);;    
 
 BME280 Pressure;      //BMP280 pressure/temp sensor
 
-unsigned long timeLastXmit;    //Keeps track of the timestamp of the last transmission
-unsigned long iLastErrorTxMillis;    //keep track of the timestamp of the last "lost GPS" transmission
 bool bHasBurst;
 float fMaxAlt;
 
@@ -95,7 +96,6 @@ void setup() {
   //Init some variables
   fMaxAlt = 0;
   bHasBurst = false;
-  timeLastXmit = 0;
 
   Tracker.annunciate('k');
 
@@ -117,11 +117,8 @@ void setup() {
     Serial.println(F("No I2C devices to init"));
   }
   
-
   GPSParser.setDebugNEMA(true);    ///TODO: Need to pull this from Configuration
   GPSParser.setDebugLevel(2);    //Get full verbose output from the GPS
-
-  iLastErrorTxMillis = millis();      //set a starting time for the potential error messages
 }
 
 
@@ -189,7 +186,7 @@ void loop() {
     //This is no logic to beacon intervals - just plan old time delays
     msDelay = (unsigned long)Config.getBeaconSimpleDelay() * 1000;    //cast this to unsigned long
     
-     if ((millis() - timeLastXmit) > msDelay) {
+     if ((millis() - Aprs.getLastTransmitMillis()) > msDelay) {
       //we've waited long enough - transmit
       bXmit = true;
     }
@@ -205,7 +202,7 @@ void loop() {
       //we're in the slow range
       msDelay = (unsigned long)Config.getBeaconSpeedDelayLow() * 1000;    //cast this to unsigned long
       
-      if ((millis() - timeLastXmit) > msDelay) {
+      if ((millis() - Aprs.getLastTransmitMillis()) > msDelay) {
         //we've waited long enough for this speed - transmit
         bXmit = true;
       }
@@ -215,7 +212,7 @@ void loop() {
       //we're in the medium range
       msDelay = (unsigned long)Config.getBeaconSpeedDelayMid() * 1000;    //cast this to unsigned long
       
-      if ((millis() - timeLastXmit) > msDelay) {
+      if ((millis() - Aprs.getLastTransmitMillis()) > msDelay) {
         //we've waited long enough for this speed - transmit
         bXmit = true;
       }
@@ -225,7 +222,7 @@ void loop() {
       //we're in the fast range
       msDelay = (unsigned long)Config.getBeaconSpeedDelayHigh() * 1000;    //cast this to unsigned long
       
-      if ((millis() - timeLastXmit) > msDelay) {
+      if ((millis() - Aprs.getLastTransmitMillis()) > msDelay) {
         //we've waited long enough for this speed - transmit
         bXmit = true;
       }
@@ -239,7 +236,7 @@ void loop() {
       //we're in the low phase of the flight - we'll typically send packets more frequently close to the ground
       msDelay = (unsigned long)Config.getBeaconAltitudeDelayLow() * 1000;    //cast this to unsigned long
       
-      if ((millis() - timeLastXmit) > msDelay) {
+      if ((millis() - Aprs.getLastTransmitMillis()) > msDelay) {
         //we've waited long enough for this speed - transmit
         bXmit = true;
       }
@@ -248,7 +245,7 @@ void loop() {
       //we're in the mid-phase of the flight.  We'll transmit regularly in here
       msDelay = (unsigned long)Config.getBeaconAltitudeDelayMid() * 1000;    //cast this to unsigned long
       
-      if ((millis() - timeLastXmit) > msDelay) {
+      if ((millis() - Aprs.getLastTransmitMillis()) > msDelay) {
         //we've waited long enough for this speed - transmit
         bXmit = true;
       }
@@ -257,7 +254,7 @@ void loop() {
       //we're in the top-phase of the flight.  Transmit more frequenly to get better burst resolution?
       msDelay = (unsigned long)Config.getBeaconAltitudeDelayHigh() * 1000;    //cast this to unsigned long
       
-      if ((millis() - timeLastXmit) > msDelay) {
+      if ((millis() - Aprs.getLastTransmitMillis()) > msDelay) {
         //we've waited long enough for this speed - transmit
         bXmit = true;
       }
@@ -277,11 +274,24 @@ void loop() {
     //This is a voltage-checked time delay.  It will wait X seconds, but then also wait for the system (solar) voltage to be above a threshold before transmitting
     msDelay = (unsigned long)Config.getMinTimeBetweenXmits() * 1000;    //cast this to unsigned long
     
-     if ((millis() - timeLastXmit) > msDelay) {
+    if ((millis() - Aprs.getLastTransmitMillis()) > msDelay) {
       //we've waited long enough - see if we have the power to transmit
-      
       if (battMillivolts > Config.getVoltThreshXmit()) {
-        bXmit = true;
+        
+        //We have power to transmit, see if we have a valid GPS fix
+        if (GPSParser.FixValid()) {
+          //we have a valid GPS fix - transmit
+          bXmit = true;
+        } else {
+          //we don't have a valid GPS fix - Allow up to 2x the msDelay to wait for a fix
+          if ((millis() - Aprs.getLastTransmitMillis()) > (msDelay * 2)) {
+            //we've waited long enough for a fix - transmit anyway
+            Serial.println(F("No GPS Fix - xmit anyway"));
+            bXmit = true;
+          } else {
+            Serial.println(F("No GPS Fix - delay"));
+          }
+        }
       } else {
         Serial.println("Low Batt - no xmit");
       }
@@ -316,7 +326,6 @@ void loop() {
       Serial.println(F("Xmit Prohibit"));
     }
 
-    timeLastXmit = millis();
     fMaxSpeed = 0;    //reset the max speed to check again this next cycle (Used for Speed-based smart beaconing)
 
     delay(DELAY_MS_BETWEEN_XMITS);    //delay about a second - if you don't you can run into multiple packets inside of a 2 second window
@@ -440,6 +449,11 @@ void sendPositionSingleLine() {
   if (Config.getI2cBME280() && Config.getStatusXmitPressure()) {
     Aprs.packetAppend((char *)" Press=");
     Aprs.packetAppend((float)airPressure);
+  }
+
+  if (XMIT_MILLIS == true) {
+    Aprs.packetAppend((char *)" Millis=");
+    Aprs.packetAppend((long)(millis() / 1000), false);
   }
 
   if (Config.getStatusXmitBurstAltitude() && bHasBurst) {

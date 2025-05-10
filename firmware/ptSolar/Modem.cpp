@@ -44,6 +44,7 @@ Modem::Modem(uint8_t pinEnable, uint8_t pinPTT, uint8_t pinTxAudio, uint8_t pinS
 
 
   this->_txDelay = 30;    //default to 30 if not otherwise defined.
+  this->_lastTransmitMillis = 0;    //initialize the last transmit time to zero
 
   this->PTT(false);   //make sure the transmitter is unkeyed
 }
@@ -244,6 +245,7 @@ void Modem::packetAppend(char c) {
  * @brief Appends a float to the packet buffer.  This function will append the float to the packet buffer, and the packet will be transmitted when the packetSend() function is called.
  * @param f The float to append to the packet buffer.
  * @note  This is output a positive or negative float, with a single decimal point. Note that sprintf() does not support floats, so this function is a workaround.
+ * @note  The float is FLOORed at a single decimal point.  For example, 12.31 will be output as 12.3, and 12.39 will also be output as 12.3.
  */
 void Modem::packetAppend(float f) {
   if (f < 0) {
@@ -285,6 +287,9 @@ void Modem::packetSend() {
   this->_CRC = 0xFFFF;    //init the CRC variable
 
 
+  //Keep track of the time we started transmitting
+  this->_lastTransmitMillis = millis(); 
+
   //Key the transmitter
   this->PTT(true);
 
@@ -305,6 +310,8 @@ void Modem::packetSend() {
  */
 void Modem::sendTestDiagnotics() {
 
+  //Keep track of the time we started transmitting
+  this->_lastTransmitMillis = millis();
 
   this->PTT(true);
   delay(DIAGNOSTIC_DELAY);   //deadkey before starting the tones.
