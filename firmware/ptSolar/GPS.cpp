@@ -162,37 +162,37 @@ void GPS::collectGPSStrings() {
 	GPS.begin(9600);
 
 	
-
+Serial.println("collectGPS");
 	this->enableGPS(false);		//Make sure the GPS is enabled before trying to collect data
 
 	this->clearInputBuffer();
 	this->clearSentenceFlags();      //clear out the temporary flags to indicate that the new sentences have come in
-
+Serial.println("c1");
 
 	//keep track of how long we can listen to the GPS
 	unsigned long ulUntil = millis() + GPS_MAX_COLLECTION_TIME;
 
-
+Serial.println(ulUntil);
 	while (millis() < ulUntil ) {
 		//need to continue looping even if the data isn't coming in.
 
 		//see if there's some new GPS data available
 		if (GPS.available()) {
-			byte c = GPS.read();
-
-			this->addChar(c);
+			this->addChar(GPS.read());
 
 			//check the sentence flags to see if both RMC and GGA's have been received in this session
 			if (this->gotNewRMC() && this->gotNewGGA()) {
 				//we got new GGA and RMC strings - exit out now rather than waiting the whole alloted period.
-				return;
+Serial.println("c2");				
+				break;
 			}
 		}
 	}
-
+Serial.println(millis());
 	GPS.end();	//close the serial port to the GPS so it doens't draw excess current
 	pinMode(this->_pinGPSTx, INPUT);	//set the GPS Tx pin back to input mode so it doesn't draw excess current
 	pinMode(this->_pinGPSRx, INPUT);	//set the GPS Rx pin back to input mode so it doesn't draw excess current	
+Serial.println("c3");
 	return;
 }
 
@@ -313,7 +313,7 @@ void GPS::addChar(char c) {
 				this->_bRMCComplete = true;    //set a flag indicating that an RMC sentence has been received, therefore we have valid data
 
 				Serial.println(F("Validating RMC"));
-				this->validateGPSSentence(this->_szTemp, 12, 23);	//validate the GGA sentence to make sure it has the right number of commas and is long enough
+				this->validateGPSSentence(this->_szTemp, 13, 23);	//validate the GGA sentence to make sure it has the right number of commas and is long enough
 				this->parseRMC();
 
 				this->_bGotNewRMC = true;      //set a temporary flag indicating that we got a new RMC sentence
