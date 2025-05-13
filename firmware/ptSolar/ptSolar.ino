@@ -20,7 +20,7 @@ Before programming for the first time, the ATmega fuses must be set.
 */
 
 
-#define FIRMWARE_VERSION "1.0.0"
+#define FIRMWARE_VERSION "1.0.1"
 #define CONFIG_PROMPT "\n\n# "
 
 
@@ -698,7 +698,7 @@ void doConfigMode() {
       }
 
       Serial.print(CONFIG_PROMPT);
-      ulUntil = millis() + 600000    //reset the timer for the config mode
+      ulUntil = millis() + 600000;    //reset the timer for the config mode
     }
     Serial.println(F("Rebooting..."));
     Tracker.reboot();
