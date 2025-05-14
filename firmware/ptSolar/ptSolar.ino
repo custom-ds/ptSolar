@@ -128,6 +128,7 @@ void setup() {
   
   GPSParser.setDebugNEMA(true);    ///TODO: Need to pull this from Configuration
   GPSParser.setDebugLevel(2);    //Get full verbose output from the GPS
+  GPSParser.setGPSType(2);    //Set the GPS type to ATGM332D
 }
 
 

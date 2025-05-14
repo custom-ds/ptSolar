@@ -38,12 +38,7 @@ void ptConfig::readEEPROM() {
         iCheckSum += this->_config.Callsign[i];
     }
 
-    Serial.println(F("Read EEPROM"));
-    Serial.println(this->_config.Callsign);
-
     if (iCheckSum != this->_config.CheckSum) {
-        Serial.println(F("Checksum fail. Resetting."));
-
         //we do NOT have a match - reset the Config variables
         this->setDefaultConfig();
     }

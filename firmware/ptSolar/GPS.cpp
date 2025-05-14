@@ -36,27 +36,28 @@ GPS::GPS(uint8_t pinGPSRx, uint8_t pinGPSTx, uint8_t pinGPSEnable) {
 	this->disableGPS();    //disable the GPS module
 
 	//Constructor - initialize the vars
-	_szTemp[0] = 0;
-	_iTempPtr = 0;
-	_bFoundStart = false;
-	_bRMCComplete = false;
-	_bGGAComplete = false;  
+	this->_szTemp[0] = 0;
+	this->_iTempPtr = 0;
+	this->_bFoundStart = false;
+	this->_bRMCComplete = false;
+	this->_bGGAComplete = false;  
 
-	strcpy(_szLatitude, "1234.5678");
-	strcpy(_szLongitude, "12345.6789");
-	strcpy(_szGPSDate, "000000"); 
-	_currTime.hh =_currTime.mm = _currTime.ss = 0;
-	_cLatitudeHemi = 'N';
-	_cLongitudeHemi = 'W';
-	_iFixQuality = 0;
-	_bFixValid = false;
-	_iNumSats = 0;
-	_fAltitude = 0.0;
-	_fKnots = 0.0;
-	_fCourse = 0.0;
+	strcpy(this->_szLatitude, "1234.5678");
+	strcpy(this->_szLongitude, "12345.6789");
+	strcpy(this->_szGPSDate, "000000"); 
+	this->_currTime.hh =_currTime.mm = _currTime.ss = 0;
+	this->_cLatitudeHemi = 'N';
+	this->_cLongitudeHemi = 'W';
+	this->_iFixQuality = 0;
+	this->_bFixValid = false;
+	this->_iNumSats = 0;
+	this->_fAltitude = 0.0;
+	this->_fKnots = 0.0;
+	this->_fCourse = 0.0;
+	this->_GPSType = 0;	//0=Generic NMEA, 1=UBlox, 2=ATGM332D
 
-	_lastDecodedMillis = millis();
-	_outputNEMA = false;
+	this->_lastDecodedMillis = millis();
+	this->_outputNEMA = false;
 }
 
 
@@ -135,15 +136,15 @@ void GPS::initGPS() {
 
 
 	// ATGM332D GPS - set the GPS to high altitude mode and disable unnecessary NMEA sentences
-	if (this->_GPSType ==2) {
+	if (this->_GPSType == 2) {
 		if (this->_debugLevel > 0) Serial.println(F("Init ATGM332"));
 
 		if (this->_debugLevel > 0) Serial.println(F("Config GGA/RMC"));
-		Serial.println(F("$PCAS03,1,0,0,0,1,0,0,0,0*1E")); // turns on only $GNGGA and $GNRMC (1 sec)
+		GPS.println(F("$PCAS03,1,0,0,0,1,0,0,0,0*1E")); // turns on only $GNGGA and $GNRMC (1 sec)
 		delay(100);
 
 		if (this->_debugLevel > 1) Serial.println(F("Enable air"));
-		Serial.println(F("$PCAS11,5*18")); // Airborne mode on ATM336H-5N GPS??
+		GPS.println(F("$PCAS11,5*18")); // Airborne mode on ATM336H-5N GPS??
 		delay(100);		
 	}
 
