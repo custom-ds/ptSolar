@@ -68,8 +68,10 @@ GPS::GPS(uint8_t pinGPSRx, uint8_t pinGPSTx, uint8_t pinGPSEnable) {
 void GPS::initGPS() {
 	bool bSuccess = false;
 
-	SoftwareSerial GPS(this->_pinGPSRx, this->_pinGPSTx, false);
-	GPS.begin(9600);
+	
+	SoftwareSerial* GPS = nullptr;
+	GPS = new SoftwareSerial(this->_pinGPSRx, this->_pinGPSTx, false);
+	GPS->begin(9600);
 	delay(500);
 
 	// UBlox GPS - set the GPS to high altitude mode (Dynamic Model 6 – Airborne < 1g)
@@ -105,12 +107,12 @@ void GPS::initGPS() {
 		}
 		
 		//send the config to the GPS
-		GPS.flush();
-		GPS.write(0xFF);
+		GPS->flush();
+		GPS->write(0xFF);
 		delay(500);
 		
 		for (byte i=0; i<44; i++) {
-			GPS.write(setdm6[i]);
+			GPS->write(setdm6[i]);
 		}
 		
 		//keep track of how long we can listen to the GPS
@@ -121,8 +123,8 @@ void GPS::initGPS() {
 			if (ackByteID > 9) return true;    //we had all 9 bytes come back through - valid response!!!
 		
 			// Make sure data is available to read
-			if (GPS.available()) {
-				byte c = GPS.read();
+			if (GPS->available()) {
+				byte c = GPS->read();
 			
 				// Check that bytes arrive in sequence as per expected ACK packet
 				if (c == ackPacket[ackByteID]) {
@@ -140,15 +142,21 @@ void GPS::initGPS() {
 		if (this->_debugLevel > 0) Serial.println(F("Init ATGM332"));
 
 		if (this->_debugLevel > 0) Serial.println(F("Config GGA/RMC"));
-		GPS.println(F("$PCAS03,1,0,0,0,1,0,0,0,0*1E")); // turns on only $GNGGA and $GNRMC (1 sec)
+		GPS->println(F("$PCAS03,1,0,0,0,1,0,0,0,0*1E")); // turns on only $GNGGA and $GNRMC (1 sec)
 		delay(100);
 
 		if (this->_debugLevel > 1) Serial.println(F("Enable air"));
-		GPS.println(F("$PCAS11,5*18")); // Airborne mode on ATM336H-5N GPS??
+		GPS->println(F("$PCAS11,5*18")); // Airborne mode on ATM336H-5N GPS??
 		delay(100);		
 	}
 
-	GPS.end();	//close the serial port to the GPS so it doens't draw excess current
+	
+	
+	// Clean up
+	GPS->end();	//close the serial port to the GPS so it doens't draw excess current
+	delete GPS;
+	GPS = nullptr;
+
 	pinMode(this->_pinGPSTx, INPUT);	//set the GPS Tx pin back to input mode so it doesn't draw excess current
 	pinMode(this->_pinGPSRx, INPUT);	//set the GPS Rx pin back to input mode so it doesn't draw excess current
 }
@@ -159,8 +167,9 @@ void GPS::initGPS() {
  * @note   This function will collect GPS strings from the GPS module and parse them for valid sentences. It will timeout after GPS_MAX_COLLECTION_TIME milliseconds if no data is received.
  */
 void GPS::collectGPSStrings() {
-	SoftwareSerial GPS(this->_pinGPSRx, this->_pinGPSTx, false);    //A True at the end indicates that the serial data is inverted.
-	GPS.begin(9600);
+	SoftwareSerial* GPS = nullptr;
+	GPS = new SoftwareSerial(this->_pinGPSRx, this->_pinGPSTx, false);
+	GPS->begin(9600);
 
 	
 Serial.println("collectGPS");
@@ -178,8 +187,8 @@ Serial.println(ulUntil);
 		//need to continue looping even if the data isn't coming in.
 
 		//see if there's some new GPS data available
-		if (GPS.available()) {
-			this->addChar(GPS.read());
+		if (GPS->available()) {
+			this->addChar(GPS->read());
 
 			//check the sentence flags to see if both RMC and GGA's have been received in this session
 			if (this->gotNewRMC() && this->gotNewGGA()) {
@@ -190,7 +199,11 @@ Serial.println("c2");
 		}
 	}
 Serial.println(millis());
-	GPS.end();	//close the serial port to the GPS so it doens't draw excess current
+	// Clean up
+	GPS->end();	//close the serial port to the GPS so it doens't draw excess current
+	delete GPS;
+	GPS = nullptr;
+	
 	pinMode(this->_pinGPSTx, INPUT);	//set the GPS Tx pin back to input mode so it doesn't draw excess current
 	pinMode(this->_pinGPSRx, INPUT);	//set the GPS Rx pin back to input mode so it doesn't draw excess current	
 Serial.println("c3");

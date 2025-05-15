@@ -71,19 +71,20 @@ void Modem::PTT(bool tx) {
     digitalWrite(this->_pinEnable, HIGH);
     
     //Configure the serial port
-    SoftwareSerial DRA(this->_pinSerialRx, this->_pinSerialTx, false);
-    DRA.begin(9600);
+    SoftwareSerial* XMIT = nullptr;
+	  XMIT = new SoftwareSerial(this->_pinSerialRx, this->_pinSerialTx, false);
+	  XMIT->begin(9600);
     delay(100);
 
     //Connect to the radio chip
     if (this->_debugLevel >0) Serial.println(F("Conn"));
-    DRA.print(F("AT+DMOCONNECT\r\n"));
+    XMIT->print(F("AT+DMOCONNECT\r\n"));
     
     //Get the response:
     start = millis();
     do {
-      if (DRA.available()) {
-        response = DRA.read();
+      if (XMIT->available()) {
+        response = XMIT->read();
         if (this->_debugLevel == 2) Serial.print(response);     //debug the output from the response
       }
     } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);
@@ -97,17 +98,17 @@ void Modem::PTT(bool tx) {
       Serial.println(this->_szTxFreq);
     }
 
-    DRA.print(F("AT+DMOSETGROUP=0,"));
-    DRA.print(this->_szTxFreq);
-    DRA.print(",");
-    DRA.print(this->_szRxFreq);
-    DRA.print(F(",0000,4,0000\r\n"));   //No CTCSS Tx, Sql 4, No CTCSS Rx
+    XMIT->print(F("AT+DMOSETGROUP=0,"));
+    XMIT->print(this->_szTxFreq);
+    XMIT->print(",");
+    XMIT->print(this->_szRxFreq);
+    XMIT->print(F(",0000,4,0000\r\n"));   //No CTCSS Tx, Sql 4, No CTCSS Rx
 
     //Get the response:
     start = millis();
     do {
-      if (DRA.available()) {
-        response = DRA.read();
+      if (XMIT->available()) {
+        response = XMIT->read();
         if (this->_debugLevel == 2) Serial.print(response);     //debug the output from the response
       }
     } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);    
@@ -116,19 +117,24 @@ void Modem::PTT(bool tx) {
     //delay(100);
 
     if (this->_debugLevel >0) Serial.println("Filter:");
-    DRA.print(F("AT+SETFILTER=1,1,1\r\n"));   //Set the tx/rx filters to 1,1,1
+    XMIT->print(F("AT+SETFILTER=1,1,1\r\n"));   //Set the tx/rx filters to 1,1,1
 
     //Get the response:
     start = millis();
     do {
-      if (DRA.available()) {
-        response = DRA.read();
+      if (XMIT->available()) {
+        response = XMIT->read();
         if (this->_debugLevel == 2) Serial.print(response);     //debug the output from the response
       }
     } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);
     if (this->_debugLevel ==2) Serial.println("");
     if (this->_debugLevel >0) Serial.println(F("End Resp"));
     delay(100);
+
+    // Clean up
+    XMIT->end();	//close the serial port to the GPS so it doens't draw excess current
+    delete XMIT;
+    XMIT = nullptr;
 
     //Push the PTT
     digitalWrite(this->_pinPTT, HIGH);   //There's a delay of about 37mS from PTT going high to when RF is emitted.

@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License along with thi
 
 #include "Arduino.h"
 #include <string.h>
+#include <SoftwareSerial.h>
 
 #define _MAX_SENTENCE_LEN 88
 #define _MAX_LATITUDE_LEN 12
@@ -142,7 +143,7 @@ class GPS
     uint8_t getPinMode(uint8_t pin);
 	  
 	  
-		// properties
+		// Private variables
     uint8_t _pinGPSRx;
     uint8_t _pinGPSTx;
     uint8_t _pinGPSEnable;
