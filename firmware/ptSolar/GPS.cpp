@@ -324,6 +324,7 @@ void GPS::addChar(char c) {
 				//we have the start of an RMC string
 
 				if (this->_outputNEMA) Serial.println(this->_szTemp);		//dump the GPS sentence to the serial port if desired.
+				Serial.flush();
 				this->_bRMCComplete = true;    //set a flag indicating that an RMC sentence has been received, therefore we have valid data
 
 				Serial.println(F("Validating RMC"));
@@ -337,6 +338,7 @@ void GPS::addChar(char c) {
 				//we have the start of an GGA string
 				
 				if (this->_outputNEMA) Serial.println(this->_szTemp);		//dump the GPS sentence to the serial port if desired.
+				Serial.flush();
 				this->_bGGAComplete = true;
 
 				Serial.println(F("Validating GGA"));

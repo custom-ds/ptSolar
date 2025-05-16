@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License along with thi
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <arduino.h>
+#include <avr/wdt.h>
 
 // defines for setting and clearing register bits
 #ifndef cbi

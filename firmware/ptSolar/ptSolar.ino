@@ -20,7 +20,7 @@ Before programming for the first time, the ATmega fuses must be set.
 */
 
 
-#define FIRMWARE_VERSION "1.0.1"
+#define FIRMWARE_VERSION "1.0.2"
 #define CONFIG_PROMPT "\n\n# "
 
 
@@ -93,8 +93,9 @@ float fMaxAlt;
 void setup() {
   Serial.begin(19200);
 
+  wdt_disable();    //disable the watchdog timer by default
   #ifdef WATCHDOG
-    wdt_enable(WDTO_8S);
+    wdt_enable(WDTO_8S);    //Enable the Watchdog if configured
   #endif
 
   wdt_reset();    //reset the watchdog timer (even if we're not using it)
@@ -310,8 +311,8 @@ Serial.println("4");
           //we have a valid GPS fix - transmit
           bXmit = true;
         } else {
-          //we don't have a valid GPS fix - Allow up to 2x the msDelay to wait for a fix
-          if ((millis() - Aprs.getLastTransmitMillis()) > (msDelay * 2)) {
+          //we don't have a valid GPS fix - Allow up to msDelay + 60s to wait for a fix
+          if ((millis() - Aprs.getLastTransmitMillis()) > (msDelay + 60000)) {
             //we've waited long enough for a fix - transmit anyway
             Serial.println(F("No GPS - xmit anyway"));
             bXmit = true;
@@ -333,7 +334,7 @@ Serial.println("E");
     bool bXmitPermitted = true;    //assume that we can transmit
 
     //Disable the GPS to save power
-    //GPSParser.disableGPS();    //disable the GPS module
+    GPSParser.disableGPS();    //disable the GPS module before transmitting
 
     //Determine the transmit/receive frequency to use
     if (Config.getUseGlobalFreq()) {
@@ -465,15 +466,14 @@ Serial.println("j");
     } else {
       Aprs.packetAppend((char *)" na");
     }
-
-    sprintf(szTemp, "%dSats", GPSParser.NumSats());
+    sprintf(szTemp, "%d", GPSParser.NumSats());
     Aprs.packetAppend(szTemp);
   }
 
   Serial.println("k");
   if (Config.getStatusXmitBatteryVoltage()) {
 
-    Aprs.packetAppend((char *)" Vb=");
+    Aprs.packetAppend((char *)" V=");
     Aprs.packetAppend(Tracker.readBatteryVoltage(true));
   }
 
@@ -489,7 +489,7 @@ Serial.println("m");
   }
 Serial.println("n");
   if (XMIT_MILLIS == true) {
-    Aprs.packetAppend((char *)" Millis=");
+    Aprs.packetAppend((char *)" S=");
     Aprs.packetAppend((long)(millis() / 1000), false);
   }
 Serial.println("o");
@@ -522,6 +522,7 @@ void showVersion() {
   Serial.println((char *)FIRMWARE_VERSION);
   Serial.print(F("Config Version: "));
   Serial.println(CONFIG_VERSION);
+  Serial.flush();
 }
 
 
@@ -701,10 +702,11 @@ void doConfigMode() {
       Serial.print(CONFIG_PROMPT);
       ulUntil = millis() + 600000;    //reset the timer for the config mode
     }
-    Serial.println(F("Rebooting..."));
-    Tracker.reboot();
-
   }
+  Serial.println(F("Rebooting..."));
+  Serial.flush();
+  delay(200);
+  Tracker.reboot();  
 }
 
 

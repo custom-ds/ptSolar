@@ -41,7 +41,6 @@ ptTracker::ptTracker(uint8_t pinLED, uint8_t pinPiezo, uint8_t pinBattery, uint8
  * @param c The character to annunciate.
  */
 void ptTracker::annunciate(char c) {
-    //send an anunciator via LED and/or buzzer, depending on config
 
     switch (c) {
         case 'c':
@@ -113,6 +112,7 @@ void ptTracker::annunciate(char c) {
         this->audioTone(DELAY_DAH);
         break;
     }
+    wdt_reset();    //reset the watchdog timer
 }
 
 
@@ -146,6 +146,7 @@ float ptTracker::readBatteryVoltage(bool bSerialOut) {
         Serial.println("V");    
     }
 
+    wdt_reset();    //reset the watchdog timer
     return fVolts;
 }
 
@@ -156,6 +157,7 @@ float ptTracker::readBatteryVoltage(bool bSerialOut) {
  * @note This function is called regardless of whether the audio annunciator is enabled or not, in order to provide consistent timing to the LED annunciator.
  */
 void ptTracker::audioTone(int length) {
+    wdt_reset();    //reset the watchdog timer
 
     //Set the pins to outputs if they are needed for the annunciation mode selected
     if (this->_annunciateMode & 0x01) {

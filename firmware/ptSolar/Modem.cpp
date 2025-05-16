@@ -60,6 +60,8 @@ void Modem::PTT(bool tx) {
   char response;
   long start;
 
+  wdt_reset();    //reset the watchdog timer
+
   if (tx) {
     this->configTimers();   //always make sure the ISR and PWM timers are configured prior to transmitting
 
@@ -75,6 +77,7 @@ void Modem::PTT(bool tx) {
 	  XMIT = new SoftwareSerial(this->_pinSerialRx, this->_pinSerialTx, false);
 	  XMIT->begin(9600);
     delay(100);
+    wdt_reset();    //reset the watchdog timer
 
     //Connect to the radio chip
     if (this->_debugLevel >0) Serial.println(F("Conn"));
@@ -104,6 +107,8 @@ void Modem::PTT(bool tx) {
     XMIT->print(this->_szRxFreq);
     XMIT->print(F(",0000,4,0000\r\n"));   //No CTCSS Tx, Sql 4, No CTCSS Rx
 
+    wdt_reset();    //reset the watchdog timer
+
     //Get the response:
     start = millis();
     do {
@@ -111,7 +116,10 @@ void Modem::PTT(bool tx) {
         response = XMIT->read();
         if (this->_debugLevel == 2) Serial.print(response);     //debug the output from the response
       }
-    } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);    
+    } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);  
+    
+    wdt_reset();    //reset the watchdog timer
+
     if (this->_debugLevel ==2) Serial.println("");
     if (this->_debugLevel >0) Serial.println(F("End Resp"));
     //delay(100);
@@ -127,6 +135,9 @@ void Modem::PTT(bool tx) {
         if (this->_debugLevel == 2) Serial.print(response);     //debug the output from the response
       }
     } while (response != '0' && (millis() - start) < MAX_WAIT_TIMEOUT);
+
+    wdt_reset();    //reset the watchdog timer
+
     if (this->_debugLevel ==2) Serial.println("");
     if (this->_debugLevel >0) Serial.println(F("End Resp"));
     delay(100);
@@ -316,27 +327,37 @@ void Modem::packetSend() {
  */
 void Modem::sendTestDiagnotics() {
 
+  wdt_reset();    //reset the watchdog timer
+
   //Keep track of the time we started transmitting
   this->_lastTransmitMillis = millis();
 
   this->PTT(true);
   delay(DIAGNOSTIC_DELAY);   //deadkey before starting the tones.
 
+  wdt_reset();    //reset the watchdog timer
+
   this->_iTxState = 12;    //set the state to 12 to indicate a constant test tone. Use 12 because it resets if there was previously a courtesy tone.
   this->timer1ISR(true);
   delay(DIAGNOSTIC_DELAY);
   delay(DIAGNOSTIC_DELAY);
+
+  wdt_reset();    //reset the watchdog timer
 
   //Swap tones
   this->_iTxState = 12;    //temporarily set the state to 12 to flip the tone to the opposite.
   delay(DIAGNOSTIC_DELAY);
   delay(DIAGNOSTIC_DELAY);
 
+  wdt_reset();    //reset the watchdog timer
+
   //Alternate the tones
   this->_iTxState = 13;    //set the state to 11 to indicate a constant test tone
   delay(DIAGNOSTIC_DELAY);
   delay(DIAGNOSTIC_DELAY);
 
+  wdt_reset();    //reset the watchdog timer
+  
   this->timer1ISR(false);   //stop the tones
   this->_iTxState = 0;
   delay(DIAGNOSTIC_DELAY);   //dead key for a little bit

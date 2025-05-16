@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License along with thi
 
 #include <stdint.h>   //standard data types available, such as uint8_t
 #include <arduino.h>
+#include <avr/wdt.h>
 
 //Anunciator Settings
 #define DELAY_DAH 650
