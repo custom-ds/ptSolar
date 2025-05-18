@@ -144,6 +144,9 @@ class ptConfig {
       bool getStatusXmitPressure() { return _config.StatusXmitPressure; }
       void setStatusXmitPressure(bool xmit) { _config.StatusXmitPressure = xmit; }
   
+      bool getStatusXmitSeconds() { return _config.StatusXmitSeconds; }
+      void setStatusXmitSeconds(bool xmit) { _config.StatusXmitSeconds = xmit; }
+
       bool getStatusXmitCustom() { return _config.StatusXmitCustom; }
       void setStatusXmitCustom(bool xmit) { _config.StatusXmitCustom = xmit; }
   
@@ -167,6 +170,12 @@ class ptConfig {
 
       bool getUseGlobalFreq() { return _config.UseGlobalFreq; }
       void setUseGlobalFreq(bool value) { _config.UseGlobalFreq = value; }
+
+      bool getDisableGPSDuringXmit() { return _config.DisableGPSDuringXmit; }
+      void setDisableGPSDuringXmit(bool delay) { _config.DisableGPSDuringXmit = delay; }
+
+      bool getRebootHourly() { return _config.HourlyReboot; }
+      void setRebootHourly(bool reboot) { _config.HourlyReboot = reboot; }      
   
       unsigned int getVoltThreshGPS() { return _config.VoltThreshGPS; }
       void setVoltThreshGPS(unsigned int thresh) { _config.VoltThreshGPS = thresh; }
@@ -176,7 +185,10 @@ class ptConfig {
   
       unsigned int getMinTimeBetweenXmits() { return _config.MinTimeBetweenXmits; }
       void setMinTimeBetweenXmits(unsigned int time) { _config.MinTimeBetweenXmits = time; }
-  
+
+      bool getDelayXmitUntilGPSFix() { return _config.DelayXmitUntilGPSFix; }
+      void setDelayXmitUntilGPSFix(bool delay) { _config.DelayXmitUntilGPSFix = delay; }
+
       unsigned int getCheckSum() { return _config.CheckSum; }
       void setCheckSum(unsigned int sum) { _config.CheckSum = sum; }
   
@@ -228,8 +240,10 @@ class ptConfig {
         bool StatusXmitBatteryVoltage;
         bool StatusXmitTemp;
         bool StatusXmitPressure;
-      
+        bool StatusXmitSeconds;
         bool StatusXmitCustom;
+        
+
         byte RadioType;
         unsigned int RadioTxDelay;
         bool RadioCourtesyTone;
@@ -239,12 +253,15 @@ class ptConfig {
         //Enable the BME280 temperature/pressure sensor
         bool I2cBME280;
         bool UseGlobalFreq;    //Use the global frequency database based on position
-      
+        bool DisableGPSDuringXmit;
+        bool HourlyReboot;
+
         //Beacon Type 4 Settings
         unsigned int VoltThreshGPS;    //The voltage threshold to activate the GPS and read a position (in millivolts)
         unsigned int VoltThreshXmit;    //The voltage threshold to transmit a packet (in millivolts)
         unsigned int MinTimeBetweenXmits;    //The minimum time between transmissions (in seconds)
-      
+        bool DelayXmitUntilGPSFix;    //delay up to 1 minute for a GPS fix before transmitting
+
         unsigned int CheckSum;    //sum of the callsign element.  If it doesn't match, then it reinitializes the EEPROM
       } _config;
 };

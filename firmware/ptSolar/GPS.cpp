@@ -172,17 +172,15 @@ void GPS::collectGPSStrings() {
 	GPS->begin(9600);
 
 	
-Serial.println("collectGPS");
+	//Serial.println("collectGPS");
 	this->enableGPS(false);		//Make sure the GPS is enabled before trying to collect data
 
 	this->clearInputBuffer();
 	this->clearSentenceFlags();      //clear out the temporary flags to indicate that the new sentences have come in
-Serial.println("c1");
 
 	//keep track of how long we can listen to the GPS
 	unsigned long ulUntil = millis() + GPS_MAX_COLLECTION_TIME;
 
-Serial.println(ulUntil);
 	while (millis() < ulUntil ) {
 		//need to continue looping even if the data isn't coming in.
 
@@ -193,12 +191,10 @@ Serial.println(ulUntil);
 			//check the sentence flags to see if both RMC and GGA's have been received in this session
 			if (this->gotNewRMC() && this->gotNewGGA()) {
 				//we got new GGA and RMC strings - exit out now rather than waiting the whole alloted period.
-Serial.println("c2");				
 				break;
 			}
 		}
 	}
-Serial.println(millis());
 	// Clean up
 	GPS->end();	//close the serial port to the GPS so it doens't draw excess current
 	delete GPS;
@@ -206,7 +202,6 @@ Serial.println(millis());
 	
 	pinMode(this->_pinGPSTx, INPUT);	//set the GPS Tx pin back to input mode so it doesn't draw excess current
 	pinMode(this->_pinGPSRx, INPUT);	//set the GPS Rx pin back to input mode so it doesn't draw excess current	
-Serial.println("c3");
 	return;
 }
 
@@ -255,11 +250,11 @@ void GPS::enableGPS(bool initGPS) {
 		//see if the Enable pin is already in output and low, and if the Tx and Rx pins are already in input mode.  If so, don't do anything.
 		if (this->getPinMode(this->_pinGPSEnable) == OUTPUT && digitalRead(this->_pinGPSEnable) == LOW) {
 			//the output is already set to enabled
-			Serial.println(F("GPS is enabled"));
+			//Serial.println(F("GPS is enabled"));
 			return;	//don't do anything - no need to init the GPS since it's already been done
 		}
 
-		Serial.println(F("Enable GPS"));
+		Serial.println(F("Enabling GPS"));
 		
 		pinMode(this->_pinGPSEnable, OUTPUT);
 		digitalWrite(this->_pinGPSEnable, LOW);    //enable the GPS (active low)
@@ -584,16 +579,16 @@ bool GPS::validateGPSSentence(char *szGPSSentence, int iNumCommas, int iMinLengt
 		
 		iCharCount++;
 	}
-	Serial.print("Chars: ");
-	Serial.println(iCharCount);
-	Serial.print("Commas: ");
-	Serial.println(iCommaCount);
+	Serial.print("Ch: ");
+	Serial.print(iCharCount);
+	Serial.print("  Co: ");
+	Serial.print(iCommaCount);
 
 	if ((iCharCount < iMinLength) || (iNumCommas != iCommaCount)) {
-		Serial.println(F("Invalid"));
+		Serial.println(F("  Invalid"));
 		return false;
 	}
-	Serial.println(F("Valid"));
+	Serial.println(F("  Valid"));
 	//we passed all of the tests - return true
 	return true;
 }
@@ -740,10 +735,11 @@ bool GPS::getAPRSFrequency(char *sz) {
 		if (iLat >= -3000 && iLat <= 300 && iLon >= -7000 && iLon <= -3300) freqSelected = 9;    //Brazil on 145.5700MHz
 		if (iLat >= 3000 && iLat <= 4500 && iLon >= 12900 && iLon <= 14600) freqSelected = 5;    //Japan on 144.6600MHz
 		if (iLat >= 500 && iLat <= 2036 && iLon >= 9700 && iLon <= 10600) freqSelected = 8;    //Thailand on 145.5300MHz
-		if (iLat >= 2200 && iLat <= 2230 && iLon >= 11348 && iLon <= 11430) freqSelected = 2;    //Hong Kong on 144.5250MHz
+		if (iLat >= 2200 && iLat <= 2230 && iLon >= 11347 && iLon <= 11430) freqSelected = 2;    //Hong Kong on 144.5250MHz
 		if (iLat >= 4900 && iLat <= 6100 && iLon >= -800 && iLon <= 200) freqSelected = 0;    //UK on 000.0000MHz
 		if (iLat >= 1148 && iLat <= 1912 && iLon >= 4200 && iLon <= 5442) freqSelected = 0;    //Yemen on 000.0000MHz
 		if (iLat >= 3742 && iLat <= 4306 && iLon >= 13100 && iLon <= 12400) freqSelected = 0;    //North Korea on 000.0000MHz
+
 	}
 
 	switch (freqSelected) {

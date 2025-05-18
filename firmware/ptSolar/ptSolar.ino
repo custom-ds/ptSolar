@@ -20,7 +20,7 @@ Before programming for the first time, the ATmega fuses must be set.
 */
 
 
-#define FIRMWARE_VERSION "1.0.2"
+#define FIRMWARE_VERSION "1.1.0"
 #define CONFIG_PROMPT "\n\n# "
 
 
@@ -72,7 +72,6 @@ Before programming for the first time, the ATmega fuses must be set.
 //Debugging options
 #define XMIT_MILLIS true
 #define WATCHDOG
-#define REBOOT_ON_30MIN
 
 
 ptConfig Config;                                                                        //Configuration object
@@ -161,15 +160,16 @@ void loop() {
     }
   }
 
-  #ifdef REBOOT_ON_30MIN
-    //Reboot if we've been running for 30 minutes
-    if (millis() > 1800000) {
-      //we've been running for 30 minutes - reboot the system
-      Serial.println(F("30min Reboot"));
+  //Reboot the system hourly if configured to do so
+  if (Config.getRebootHourly()) {
+    //Reboot if we've been running for 60 minutes
+    if (millis() > 3600000) {
+      //we've been running for 60 minutes - reboot the system
+      Serial.println(F("60min Reboot"));
       delay(1000);
       Tracker.reboot();
     }
-  #endif
+  }
 
   battMillivolts = (unsigned long)(Tracker.readBatteryVoltage(true) * 1000);  //read the battery voltage and spit it out to the serial port
 
@@ -178,7 +178,6 @@ void loop() {
     GPSParser.enableGPS(true);    //enable the GPS module if it's not already. If it wasn't enabled, this will also initialize it.
 
     GPSParser.collectGPSStrings();
-Serial.println("A");
     fCurrentAlt = GPSParser.Altitude();        //get the current altitude
     if (fCurrentAlt > fMaxAlt) {
       fMaxAlt = fCurrentAlt;
@@ -206,7 +205,6 @@ Serial.println("A");
   //Figure out how long to delay before the next packet
   switch (Config.getBeaconType()) {
   case 0:
-Serial.println("0");  
     //This is no logic to beacon intervals - just plan old time delays
     msDelay = (unsigned long)Config.getBeaconSimpleDelay() * 1000;    //cast this to unsigned long
     
@@ -217,7 +215,6 @@ Serial.println("0");
 
     break;
   case 1:
-Serial.println("1");  
     //This is for Speed-based beaconing
 
     fSpeed = GPSParser.Knots();        //get the current speed
@@ -255,7 +252,6 @@ Serial.println("1");
 
     break;
   case 2:
-Serial.println("2");
     //This is for Altitude-based beaconing
 
     if (fCurrentAlt < Config.getBeaconAltitudeThreshLow()) {
@@ -288,7 +284,6 @@ Serial.println("2");
 
     break;
   case 3:
-Serial.println("3");  
     //Use Time Slotting to determine when to transmit
     iSeconds = GPSParser.getGPSSeconds();
 
@@ -298,7 +293,6 @@ Serial.println("3");
 
     break;
   case 4:
-Serial.println("4");  
     //This is a voltage-checked time delay.  It will wait X seconds, but then also wait for the system (solar) voltage to be above a threshold before transmitting
     msDelay = (unsigned long)Config.getMinTimeBetweenXmits() * 1000;    //cast this to unsigned long
     
@@ -312,12 +306,18 @@ Serial.println("4");
           bXmit = true;
         } else {
           //we don't have a valid GPS fix - Allow up to msDelay + 60s to wait for a fix
-          if ((millis() - Aprs.getLastTransmitMillis()) > (msDelay + 60000)) {
-            //we've waited long enough for a fix - transmit anyway
-            Serial.println(F("No GPS - xmit anyway"));
-            bXmit = true;
+
+          if (Config.getDelayXmitUntilGPSFix()) {
+            Serial.print(F("No GPS - "));
+            if ((millis() - Aprs.getLastTransmitMillis()) > (msDelay + 60000)) {
+              //we've waited long enough for a fix - transmit anyway
+              Serial.println(F("Xmit anyway"));
+              bXmit = true;
+            } else {
+              Serial.println(F("Delay"));
+            }
           } else {
-            Serial.println(F("No GPS - delay"));
+            bXmit = true;    //we have a valid GPS fix - transmit
           }
         }
       } else {
@@ -327,24 +327,18 @@ Serial.println("4");
 
     break;    
   }
-Serial.println("D");
 
+  
   if (bXmit) {
-Serial.println("E");    
     bool bXmitPermitted = true;    //assume that we can transmit
-
-    //Disable the GPS to save power
-    GPSParser.disableGPS();    //disable the GPS module before transmitting
 
     //Determine the transmit/receive frequency to use
     if (Config.getUseGlobalFreq()) {
-Serial.println("F");      
       //Look up the current APRS frequency from the GPS Position
       bXmitPermitted = GPSParser.getAPRSFrequency(szFreq);
       Aprs.setTxFrequency(szFreq);    //set the frequency to transmit on
       Aprs.setRxFrequency(szFreq);    //set the frequency to receive on
     } else {
-Serial.println("G");
       //we're supposed to use the local frequency - set it up
       Aprs.setTxFrequency(Config.getRadioFreqTx());    //set the frequency to transmit on
       Aprs.setRxFrequency(Config.getRadioFreqRx());    //set the frequency to receive on
@@ -353,8 +347,15 @@ Serial.println("G");
     //we're supposed to transmit now
     if (bXmitPermitted) {
       wdt_reset();  
+
+      if (Config.getDisableGPSDuringXmit()) {
+        //Disable the GPS to save power
+        GPSParser.disableGPS();     //disable the GPS module before transmitting
+      }
+
       sendPositionSingleLine();
     } else {
+      Aprs.setLastTransmitMillis();   //reset the last transmit time so that we don't try to transmit again immediately.
       Serial.println(F("Xmit Prohibit"));
     }
 
@@ -369,8 +370,8 @@ Serial.println("G");
 
   //see if we're tracking free memory (debugging)
   #ifdef  MEMORY_FREE_H
-    Serial.print(F("Mem: "));
-    Serial.println(freeMemory());
+    // Serial.print(F("Mem: "));
+    // Serial.println(freeMemory());
   #endif  
 }
 
@@ -390,7 +391,6 @@ Serial.println(F("SendPos"));
 
   char statusIAT = 0;
   
-Serial.println("a");
   if (Config.getI2cBME280()) {
     if (Config.getStatusXmitPressure() || Config.getStatusXmitTemp()) {
       //we're supposed to transmit the air pressure and/or temp - go ahead and pre-fetch it
@@ -399,46 +399,43 @@ Serial.println("a");
       insideTemp = (double)Pressure.readTempC();
     }
   }
-Serial.println("b");
   Aprs.packetHeader(Config.getDestination(), Config.getDestinationSSID(), Config.getCallsign(), Config.getCallsignSSID(), Config.getPath1(), Config.getPath1SSID(), Config.getPath2(), Config.getPath2SSID(), (GPSParser.Altitude() < Config.getDisablePathAboveAltitude()));
 
   //      /155146h3842.00N/09655.55WO301/017/A=058239
   int hh = 0, mm = 0, ss = 0;
   GPSParser.getGPSTime(&hh, &mm, &ss);
   Aprs.packetAppend((char *)"/");
-Serial.println("c");
+
   sprintf(szTemp, "%02d", hh);
   Aprs.packetAppend(szTemp);
   sprintf(szTemp, "%02d", mm);
   Aprs.packetAppend(szTemp);
   sprintf(szTemp, "%02d", ss);
   Aprs.packetAppend(szTemp);
-Serial.println("d");
+
   Aprs.packetAppend((char *)"h");
   //Latitude
   GPSParser.getLatitude(szTemp);
   i=0;
 
   while (i<7 && szTemp[i]) {
-Serial.println("e");    
     Aprs.packetAppend(szTemp[i]);
     i++;
   }
   Aprs.packetAppend(GPSParser.LatitudeHemi());
   Aprs.packetAppend(Config.getSymbolPage());
-Serial.println("f");
+
   //Longitude
   GPSParser.getLongitude(szTemp);
   i=0;
   while (i<8 && szTemp[i]) {
-Serial.println("g");    
     Aprs.packetAppend(szTemp[i]);
     i++;
   }
-  Aprs.packetAppend(GPSParser.LongitudeHemi());
 
+  Aprs.packetAppend(GPSParser.LongitudeHemi());
   Aprs.packetAppend(Config.getSymbol());
-Serial.println("h");
+
   //Course
   fTemp = GPSParser.Course();
 
@@ -448,7 +445,6 @@ Serial.println("h");
 
   //Speed in knots
   fTemp = GPSParser.Knots();
-Serial.println("i");
   sprintf(szTemp, "%03d", (int)fTemp);
   Aprs.packetAppend(szTemp);
 
@@ -456,7 +452,7 @@ Serial.println("i");
   //Altitude in Feet
   fTemp = GPSParser.AltitudeInFeet();
   Aprs.packetAppend((long)fTemp, true);
-Serial.println("j");
+
   if (Config.getStatusXmitGPSFix()) {
     //Fix quality and num sats
 
@@ -470,44 +466,39 @@ Serial.println("j");
     Aprs.packetAppend(szTemp);
   }
 
-  Serial.println("k");
   if (Config.getStatusXmitBatteryVoltage()) {
 
     Aprs.packetAppend((char *)" V=");
-    Aprs.packetAppend(Tracker.readBatteryVoltage(true));
+    Aprs.packetAppend(Tracker.readBatteryVoltage(false));
   }
 
-Serial.println("l");
   if (Config.getI2cBME280() && Config.getStatusXmitTemp()) {
     Aprs.packetAppend((char *)" IAT=");
     Aprs.packetAppend((float)insideTemp);
   }
-Serial.println("m");
+
   if (Config.getI2cBME280() && Config.getStatusXmitPressure()) {
     Aprs.packetAppend((char *)" Press=");
     Aprs.packetAppend((float)airPressure);
   }
-Serial.println("n");
-  if (XMIT_MILLIS == true) {
+
+  if (Config.getStatusXmitSeconds()) {
     Aprs.packetAppend((char *)" S=");
     Aprs.packetAppend((long)(millis() / 1000), false);
   }
-Serial.println("o");
+
   if (Config.getStatusXmitBurstAltitude() && bHasBurst) {
     Aprs.packetAppend((char *)" Burst=");
     fTemp = fMaxAlt * METERS_TO_FEET;
     Aprs.packetAppend((long)fTemp, true);
   }
-Serial.println("p");
  
   Aprs.packetAppend(' ');
   Aprs.packetAppend(Config.getStatusMessage());
-Serial.println("q");
   Tracker.readBatteryVoltage(true);  //read the battery voltage before the transmission
-Serial.println("r");
   Aprs.packetSend();
-Serial.println("s");  
-  //Normally seeing about 280mV of drop during the transmission with a 0.5F supercap
+
+  //Normally seeing about 280mV of drop during the transmission with a 0.5F supercap - Correction: seeing about 800mV with .5F as of 5/16/2025
   Tracker.readBatteryVoltage(true);  //read the battery voltage after the transmission
 }
 

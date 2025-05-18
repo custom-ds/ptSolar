@@ -305,7 +305,7 @@ void Modem::packetSend() {
 
 
   //Keep track of the time we started transmitting
-  this->_lastTransmitMillis = millis(); 
+  this->setLastTransmitMillis();
 
   //Key the transmitter
   this->PTT(true);
