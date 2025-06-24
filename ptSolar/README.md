@@ -86,12 +86,16 @@ Once the board layout appears with the components placed on it, you will need to
 
 The column in question is the second-to-last field where most of the default values are 0.00000 or 180.00000.
 
+For the ptSolar the following parts need to be tweaked in the X/Y position to fit the pads correctly:
+* n/a
 
+The following components need to be rotated:
+* Q1-Q5 (transistors) - 180 degrees
+* U1 (3.3V Regulator) - 180 degrees
+* U2 (ATMega) - -90 degrees
+* U4 (GPS) - -90 degrees
+* U5 (Brown Out Detector) - 180 degrees
 
 
 ## Create an Final Output Directory
 Copy the entire contents of the /Current folder into a folder named for the PCB version. For example, /v1.1.2/ for safe keeping.
-
-
-
-

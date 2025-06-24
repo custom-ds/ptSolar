@@ -729,6 +729,123 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Custom DS:APX803S_Brown_Out_Detector"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 2.54 7.874 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "APX803S_Brown_Out_Detector_1_1"
+				(rectangle
+					(start -5.08 5.08)
+					(end 5.08 -5.08)
+					(stroke
+						(width 0)
+						(type solid)
+					)
+					(fill
+						(type color)
+						(color 255 255 194 1)
+					)
+				)
+				(pin power_in line
+					(at -3.81 7.62 270)
+					(length 2.54)
+					(name "Vcc"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -3.81 -7.62 90)
+					(length 2.54)
+					(name "Gnd"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "/Reset"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Custom DS:ATGM336H-5N31"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -5635,6 +5752,16 @@
 	)
 	(wire
 		(pts
+			(xy 46.99 130.81) (xy 49.53 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "09843f40-9a70-4307-9a7a-3b56be1bd9e1")
+	)
+	(wire
+		(pts
 			(xy 222.25 124.46) (xy 222.25 119.38)
 		)
 		(stroke
@@ -5665,7 +5792,7 @@
 	)
 	(wire
 		(pts
-			(xy 90.17 110.49) (xy 92.71 110.49)
+			(xy 90.17 110.49) (xy 91.44 110.49)
 		)
 		(stroke
 			(width 0.1524)
@@ -5745,7 +5872,7 @@
 	)
 	(wire
 		(pts
-			(xy 180.34 78.74) (xy 146.05 78.74)
+			(xy 180.34 78.74) (xy 177.8 78.74)
 		)
 		(stroke
 			(width 0)
@@ -5795,7 +5922,7 @@
 	)
 	(wire
 		(pts
-			(xy 90.17 49.53) (xy 92.71 49.53)
+			(xy 90.17 49.53) (xy 91.44 49.53)
 		)
 		(stroke
 			(width 0.1524)
@@ -5885,16 +6012,6 @@
 	)
 	(wire
 		(pts
-			(xy 146.05 52.07) (xy 146.05 78.74)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "255eb050-e288-4fa5-81c0-12b94acdefb1")
-	)
-	(wire
-		(pts
 			(xy 189.23 106.68) (xy 186.69 106.68)
 		)
 		(stroke
@@ -5925,7 +6042,7 @@
 	)
 	(wire
 		(pts
-			(xy 273.05 153.67) (xy 283.21 153.67)
+			(xy 273.05 153.67) (xy 276.86 153.67)
 		)
 		(stroke
 			(width 0)
@@ -5942,6 +6059,16 @@
 			(type default)
 		)
 		(uuid "28b19c2f-90f2-4ade-bdf5-0177bd272ee0")
+	)
+	(wire
+		(pts
+			(xy 90.17 54.61) (xy 91.44 54.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "28b36d35-080f-4b1d-a14a-df08a3130493")
 	)
 	(wire
 		(pts
@@ -5995,7 +6122,7 @@
 	)
 	(wire
 		(pts
-			(xy 318.77 125.73) (xy 330.2 125.73)
+			(xy 318.77 125.73) (xy 321.31 125.73)
 		)
 		(stroke
 			(width 0)
@@ -6025,7 +6152,7 @@
 	)
 	(wire
 		(pts
-			(xy 273.05 163.83) (xy 279.4 163.83)
+			(xy 273.05 163.83) (xy 274.32 163.83)
 		)
 		(stroke
 			(width 0)
@@ -6035,7 +6162,7 @@
 	)
 	(wire
 		(pts
-			(xy 90.17 57.15) (xy 92.71 57.15)
+			(xy 90.17 57.15) (xy 91.44 57.15)
 		)
 		(stroke
 			(width 0.1524)
@@ -6062,16 +6189,6 @@
 			(type default)
 		)
 		(uuid "310d4f31-8ce3-4c26-8a70-8d12ea2b9c71")
-	)
-	(wire
-		(pts
-			(xy 90.17 149.86) (xy 95.25 149.86)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "3136c267-0f60-480b-b2b5-6ed953d9ccd4")
 	)
 	(wire
 		(pts
@@ -6115,17 +6232,7 @@
 	)
 	(wire
 		(pts
-			(xy 90.17 152.4) (xy 95.25 152.4)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "3445141d-fc04-448f-862f-bbad93e7d940")
-	)
-	(wire
-		(pts
-			(xy 273.05 161.29) (xy 279.4 161.29)
+			(xy 273.05 161.29) (xy 274.32 161.29)
 		)
 		(stroke
 			(width 0)
@@ -6145,23 +6252,13 @@
 	)
 	(wire
 		(pts
-			(xy 90.17 82.55) (xy 100.33 82.55)
+			(xy 90.17 82.55) (xy 91.44 82.55)
 		)
 		(stroke
 			(width 0.1524)
 			(type solid)
 		)
 		(uuid "39aee371-89f4-441f-aaaf-b2919da9fcd2")
-	)
-	(wire
-		(pts
-			(xy 90.17 54.61) (xy 148.59 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3a9b5782-8042-492c-a2d6-3c4c3f78cfcb")
 	)
 	(wire
 		(pts
@@ -6182,16 +6279,6 @@
 			(type default)
 		)
 		(uuid "3b719d36-144f-4f8e-9e7b-79b86a8d1bad")
-	)
-	(wire
-		(pts
-			(xy 100.33 82.55) (xy 100.33 76.2)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "3bfdf5fe-132c-4442-8170-2de28b6cb53a")
 	)
 	(wire
 		(pts
@@ -6525,7 +6612,7 @@
 	)
 	(wire
 		(pts
-			(xy 90.17 74.93) (xy 92.71 74.93)
+			(xy 90.17 74.93) (xy 91.44 74.93)
 		)
 		(stroke
 			(width 0.1524)
@@ -6635,7 +6722,7 @@
 	)
 	(wire
 		(pts
-			(xy 173.99 85.09) (xy 173.99 87.63)
+			(xy 173.99 86.36) (xy 173.99 87.63)
 		)
 		(stroke
 			(width 0)
@@ -6905,7 +6992,7 @@
 	)
 	(wire
 		(pts
-			(xy 90.17 59.69) (xy 92.71 59.69)
+			(xy 90.17 59.69) (xy 91.44 59.69)
 		)
 		(stroke
 			(width 0.1524)
@@ -7015,7 +7102,7 @@
 	)
 	(wire
 		(pts
-			(xy 148.59 95.25) (xy 157.48 95.25)
+			(xy 154.94 95.25) (xy 157.48 95.25)
 		)
 		(stroke
 			(width 0)
@@ -7142,6 +7229,16 @@
 			(type solid)
 		)
 		(uuid "9d51905e-89b5-46cc-b6f3-b862b6452b93")
+	)
+	(wire
+		(pts
+			(xy 90.17 52.07) (xy 91.44 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9f136bd5-2540-4412-8f20-9f86152e8164")
 	)
 	(wire
 		(pts
@@ -7335,23 +7432,13 @@
 	)
 	(wire
 		(pts
-			(xy 90.17 107.95) (xy 96.52 107.95)
+			(xy 90.17 107.95) (xy 91.44 107.95)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "b38e3257-7467-4522-b3a6-fc86b22fcc82")
-	)
-	(wire
-		(pts
-			(xy 90.17 52.07) (xy 146.05 52.07)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b58bfa2b-adee-4527-b499-e83a35b0627c")
 	)
 	(wire
 		(pts
@@ -7405,7 +7492,7 @@
 	)
 	(wire
 		(pts
-			(xy 90.17 85.09) (xy 101.6 85.09)
+			(xy 90.17 85.09) (xy 91.44 85.09)
 		)
 		(stroke
 			(width 0.1524)
@@ -7455,16 +7542,6 @@
 	)
 	(wire
 		(pts
-			(xy 77.47 149.86) (xy 72.39 149.86)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "c2005575-4497-4ef0-b79c-b6d6da491e14")
-	)
-	(wire
-		(pts
 			(xy 303.53 199.39) (xy 303.53 190.5)
 		)
 		(stroke
@@ -7492,16 +7569,6 @@
 			(type default)
 		)
 		(uuid "c4f7f1a4-e2b3-45ff-856e-2906e490a0d8")
-	)
-	(wire
-		(pts
-			(xy 148.59 54.61) (xy 148.59 60.96)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c6165a9a-413c-4cbc-bad0-26ef645cac6e")
 	)
 	(wire
 		(pts
@@ -7582,16 +7649,6 @@
 			(type default)
 		)
 		(uuid "d0575e8f-d304-437d-a00d-162d1d53a03e")
-	)
-	(wire
-		(pts
-			(xy 90.17 147.32) (xy 95.25 147.32)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "d1541834-de04-4538-a885-e26761883bde")
 	)
 	(wire
 		(pts
@@ -7815,16 +7872,6 @@
 	)
 	(wire
 		(pts
-			(xy 101.6 85.09) (xy 101.6 77.47)
-		)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(uuid "f6d8cdc8-bfee-4a16-97b1-1a8d6c217ecb")
-	)
-	(wire
-		(pts
 			(xy 281.94 190.5) (xy 281.94 199.39)
 		)
 		(stroke
@@ -7855,7 +7902,7 @@
 	)
 	(wire
 		(pts
-			(xy 148.59 60.96) (xy 204.47 60.96)
+			(xy 200.66 60.96) (xy 204.47 60.96)
 		)
 		(stroke
 			(width 0)
@@ -7943,76 +7990,6 @@
 		)
 		(uuid "ff6d4298-6280-4c7c-b852-b7c215fceebb")
 	)
-	(label "MISO"
-		(at 95.25 147.32 0)
-		(effects
-			(font
-				(size 0.889 0.889)
-			)
-			(justify left bottom)
-		)
-		(uuid "0372635b-bf03-4817-a57e-cf6735951f25")
-	)
-	(label "GPS-RX"
-		(at 276.86 163.83 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "06d6750b-0041-49b7-8fbc-4c40c88689c6")
-	)
-	(label "RESET"
-		(at 113.03 87.63 0)
-		(effects
-			(font
-				(size 0.889 0.889)
-			)
-			(justify left bottom)
-		)
-		(uuid "1fceaffe-302e-4f50-952d-5a3f446d2e0e")
-	)
-	(label "BATT-SENSE"
-		(at 92.71 74.93 0)
-		(effects
-			(font
-				(size 0.889 0.889)
-			)
-			(justify left bottom)
-		)
-		(uuid "31f259db-cb3a-4e18-8c5e-e408414d112f")
-	)
-	(label "SDA"
-		(at 92.71 82.55 0)
-		(effects
-			(font
-				(size 0.889 0.889)
-			)
-			(justify left bottom)
-		)
-		(uuid "3d338b6b-f026-403f-840a-dda4e6a85eb0")
-	)
-	(label "GPS-EN"
-		(at 93.98 107.95 0)
-		(effects
-			(font
-				(size 0.889 0.889)
-			)
-			(justify left bottom)
-		)
-		(uuid "78af01e6-1231-44df-a4f3-90adbba5fcdc")
-	)
-	(label "GPS-TX"
-		(at 92.71 110.49 0)
-		(effects
-			(font
-				(size 0.889 0.889)
-			)
-			(justify left bottom)
-		)
-		(uuid "82cf2552-027c-419a-97ed-99cb28424749")
-	)
 	(label "BATT-SENSE"
 		(at 144.78 205.74 0)
 		(effects
@@ -8023,95 +8000,49 @@
 		)
 		(uuid "9be48144-096b-4b63-b976-2a0ae0222dca")
 	)
-	(label "MOSI"
-		(at 72.39 149.86 180)
+	(global_label "MOSI"
+		(shape input)
+		(at 91.44 57.15 0)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.889 0.889)
 			)
-			(justify right bottom)
+			(justify left)
 		)
-		(uuid "a4a8634e-2b4d-4ad7-9b57-36c61ebd2275")
-	)
-	(label "GPS-TX"
-		(at 276.86 161.29 0)
-		(effects
-			(font
-				(size 1.27 1.27)
+		(uuid "059e4f3c-1d52-4e0a-b852-8841349930b4")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 96.7468 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
 			)
-			(justify left bottom)
 		)
-		(uuid "b6184a67-c286-4c2b-abd7-a48600e62b4c")
 	)
-	(label "GPS-EN"
-		(at 330.2 125.73 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "c369d0b7-df9d-485d-ad27-29255ae6b569")
-	)
-	(label "MISO"
-		(at 92.71 59.69 0)
+	(global_label "SCL"
+		(shape input)
+		(at 91.44 85.09 0)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.889 0.889)
 			)
-			(justify left bottom)
+			(justify left)
 		)
-		(uuid "c5129192-6fdf-4791-9431-ff1e513dc68c")
-	)
-	(label "GPS-RX"
-		(at 92.71 49.53 0)
-		(effects
-			(font
-				(size 0.889 0.889)
+		(uuid "0848cb0a-e23e-455e-abf8-d10ebe0f8e53")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 95.9849 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
 			)
-			(justify left bottom)
 		)
-		(uuid "c715347f-e168-496b-8695-f271c589f138")
-	)
-	(label "SCL"
-		(at 92.71 85.09 0)
-		(effects
-			(font
-				(size 0.889 0.889)
-			)
-			(justify left bottom)
-		)
-		(uuid "ce116846-1986-438f-ad53-6dd08bb7766a")
-	)
-	(label "MOSI"
-		(at 92.71 57.15 0)
-		(effects
-			(font
-				(size 0.889 0.889)
-			)
-			(justify left bottom)
-		)
-		(uuid "e10aa4af-3e46-490b-9a9f-e9474513c89a")
-	)
-	(label "RESET"
-		(at 95.25 152.4 0)
-		(effects
-			(font
-				(size 0.889 0.889)
-			)
-			(justify left bottom)
-		)
-		(uuid "f445ecac-eb07-4628-9dfd-9b35cca5c4db")
-	)
-	(label "SCK"
-		(at 95.25 149.86 0)
-		(effects
-			(font
-				(size 0.889 0.889)
-			)
-			(justify left bottom)
-		)
-		(uuid "f56b2739-cc20-4cb2-9ce3-206ca161a8d0")
 	)
 	(global_label "XMIT-POWERSAVE"
 		(shape input)
@@ -8131,6 +8062,50 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "GPS-TX"
+		(shape input)
+		(at 91.44 110.49 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "2320d71c-4bb9-4667-b8ec-e19e2d50153a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 98.7789 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "GPS-EN"
+		(shape input)
+		(at 321.31 125.73 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "2bf4b066-bf88-4ab9-9369-f5d2aaed6c1b")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 328.8605 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -8179,6 +8154,50 @@
 			)
 		)
 	)
+	(global_label "GPS-RX"
+		(shape input)
+		(at 274.32 163.83 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "3e0fa7b7-fdd2-4b10-8564-ab927bd6e13a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 281.8706 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "MISO"
+		(shape input)
+		(at 90.17 147.32 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "4ad3c8b0-7e50-4feb-be30-2d12ea788f8a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 95.4768 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "XMIT-PTT"
 		(shape input)
 		(at 121.92 133.35 90)
@@ -8192,6 +8211,50 @@
 		(uuid "5328949e-ddb8-4fe8-9f2f-b720d277479a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 121.92 124.9529 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SCK"
+		(shape input)
+		(at 90.17 149.86 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "6869fa58-a656-4cce-9d97-8b3a8692d174")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 94.8842 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "GPS-RX"
+		(shape input)
+		(at 91.44 49.53 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "71d60800-65a4-41d0-8c99-6ac79751add3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 98.9906 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8223,6 +8286,50 @@
 			)
 		)
 	)
+	(global_label "RESET"
+		(shape input)
+		(at 49.53 130.81 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "7ed648cd-b586-483d-94b9-fd9bb51d6e95")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 55.6411 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "MOSI"
+		(shape input)
+		(at 77.47 149.86 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify right)
+		)
+		(uuid "894fa25c-c5f0-41c6-a7e1-c6d1b5773a62")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 72.1632 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "XMIT-PTT"
 		(shape input)
 		(at 91.44 97.79 0)
@@ -8236,6 +8343,72 @@
 		(uuid "8ce383e5-53f2-4497-a9f1-f77396755e52")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 99.8371 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "XMIT-TX"
+		(shape input)
+		(at 91.44 52.07 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "a13bcb25-7c95-4f16-af7e-b8ddf02f803d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 99.1175 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "MISO"
+		(shape input)
+		(at 91.44 59.69 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "b07ef36d-4adb-4d61-b132-cf6d1e37ec9f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 96.7468 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SDA"
+		(shape input)
+		(at 91.44 82.55 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "b0a7c05b-337b-4bc9-a524-2bbebf75f465")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 96.0272 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8267,6 +8440,94 @@
 			)
 		)
 	)
+	(global_label "GPS-EN"
+		(shape input)
+		(at 91.44 107.95 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "b7f1c7fb-7395-4f7f-80d5-c0899d34380e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 98.9905 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "XMIT-RX"
+		(shape input)
+		(at 200.66 60.96 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify right)
+		)
+		(uuid "bd62ebb2-7d32-47e0-938c-f6b85d403c08")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 192.7708 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "GPS-TX"
+		(shape input)
+		(at 274.32 161.29 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "c59d9690-0093-4f2a-8c72-8f4722847c1e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 281.6589 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "XMIT-TX"
+		(shape input)
+		(at 177.8 78.74 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify right)
+		)
+		(uuid "c7083674-5536-44cd-a389-220b04edb392")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 170.1225 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "XMIT-TX-AUDIO"
 		(shape input)
 		(at 207.01 119.38 180)
@@ -8289,6 +8550,28 @@
 			)
 		)
 	)
+	(global_label "RESET"
+		(shape input)
+		(at 90.17 152.4 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "d98f8b55-7e2f-4cbe-bfcb-e4225b3da637")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 96.2811 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "XMIT-PTT"
 		(shape input)
 		(at 186.69 106.68 180)
@@ -8307,6 +8590,72 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "BATT-SENSE"
+		(shape input)
+		(at 91.44 74.93 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "ecfe0430-8f7a-4db9-b716-112b5ff385c8")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 101.8691 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "RESET"
+		(shape input)
+		(at 113.03 87.63 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "f1283d64-d821-4926-bf18-40e5b832171a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 119.1411 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "XMIT-RX"
+		(shape input)
+		(at 91.44 54.61 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.889 0.889)
+			)
+			(justify left)
+		)
+		(uuid "ffbc1e69-4ad3-4f3c-88b0-d77193e20388")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 99.3292 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -8572,16 +8921,15 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 283.21 153.67 0)
+		(at 276.86 153.67 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "0e72e847-dea1-447d-9e8b-4a38fdf1ab63")
 		(property "Reference" "#PWR012"
-			(at 283.21 157.48 0)
+			(at 276.86 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8590,7 +8938,7 @@
 			)
 		)
 		(property "Value" "+3.3V"
-			(at 283.21 148.59 0)
+			(at 280.416 150.622 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8598,7 +8946,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 283.21 153.67 0)
+			(at 276.86 153.67 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8607,7 +8955,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 283.21 153.67 0)
+			(at 276.86 153.67 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8616,7 +8964,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 283.21 153.67 0)
+			(at 276.86 153.67 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8766,15 +9114,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 142.24 212.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 142.24 212.09 0)
 			(effects
@@ -8782,14 +9121,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 142.24 212.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -9047,15 +9378,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 180.34 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C110775"
 			(at 180.34 74.93 0)
 			(effects
@@ -9063,14 +9385,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 180.34 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -9438,15 +9752,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 195.58 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C95781"
 			(at 195.58 95.25 0)
 			(effects
@@ -9454,14 +9759,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 195.58 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -9544,15 +9841,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 166.37 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C40912 "
 			(at 166.37 92.71 0)
 			(effects
@@ -9560,14 +9848,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 166.37 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -9652,15 +9932,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 90.17 208.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C85181"
 			(at 90.17 208.28 0)
 			(effects
@@ -9668,14 +9939,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 90.17 208.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -9757,15 +10020,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 166.37 201.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 166.37 201.93 0)
 			(effects
@@ -9773,14 +10027,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 166.37 201.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -9862,15 +10108,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 320.04 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C105173"
 			(at 320.04 95.25 0)
 			(effects
@@ -9878,14 +10115,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 320.04 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -10053,15 +10282,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 314.96 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C98996"
 			(at 314.96 86.36 0)
 			(effects
@@ -10069,14 +10289,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 314.96 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -10387,15 +10599,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 104.14 196.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C513678"
 			(at 104.14 196.85 0)
 			(effects
@@ -10403,14 +10606,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 104.14 196.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -10821,15 +11016,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 281.94 203.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 281.94 203.2 0)
 			(effects
@@ -10837,14 +11023,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 281.94 203.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -11136,6 +11314,15 @@
 			)
 		)
 		(property "Digikey" "732-5316-ND"
+			(at 120.65 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
 			(at 120.65 95.25 0)
 			(effects
 				(font
@@ -11513,15 +11700,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 189.23 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C40912 "
 			(at 189.23 76.2 0)
 			(effects
@@ -11529,14 +11707,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 189.23 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -12218,16 +12388,15 @@
 	)
 	(symbol
 		(lib_id "power:+BATT")
-		(at 173.99 85.09 0)
+		(at 173.99 86.36 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "7ad5f59f-86ad-4c2f-9764-14dec06a37ea")
 		(property "Reference" "#PWR014"
-			(at 173.99 88.9 0)
+			(at 173.99 90.17 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12236,7 +12405,7 @@
 			)
 		)
 		(property "Value" "+BATT"
-			(at 173.99 80.01 0)
+			(at 176.022 82.804 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12244,7 +12413,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 173.99 85.09 0)
+			(at 173.99 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12253,7 +12422,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 173.99 85.09 0)
+			(at 173.99 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12262,7 +12431,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+BATT\""
-			(at 173.99 85.09 0)
+			(at 173.99 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12344,15 +12513,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 208.28 106.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C95781"
 			(at 208.28 106.68 0)
 			(effects
@@ -12360,14 +12520,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 208.28 106.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -12582,15 +12734,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 196.85 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C110775"
 			(at 196.85 74.93 0)
 			(effects
@@ -12598,14 +12741,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 196.85 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -12814,15 +12949,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 189.23 128.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C110775"
 			(at 189.23 128.27 0)
 			(effects
@@ -12830,14 +12956,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 189.23 128.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -12986,15 +13104,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 250.19 210.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 250.19 210.82 0)
 			(effects
@@ -13002,14 +13111,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 250.19 210.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -13091,15 +13192,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 228.6 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C28323"
 			(at 228.6 119.38 0)
 			(effects
@@ -13107,14 +13199,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 228.6 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -13263,15 +13347,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 176.53 201.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 176.53 201.93 0)
 			(effects
@@ -13279,14 +13354,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 176.53 201.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -13368,15 +13435,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 156.21 201.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 156.21 201.93 0)
 			(effects
@@ -13384,14 +13442,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 156.21 201.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -13709,15 +13759,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 294.64 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C98996"
 			(at 294.64 86.36 0)
 			(effects
@@ -13725,14 +13766,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 294.64 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -13899,15 +13932,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 299.72 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C541518"
 			(at 299.72 95.25 0)
 			(effects
@@ -13915,14 +13939,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 299.72 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -14070,15 +14086,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 220.98 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C110775"
 			(at 220.98 57.15 0)
 			(effects
@@ -14086,14 +14093,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 220.98 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -14175,15 +14174,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 270.51 203.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 270.51 203.2 0)
 			(effects
@@ -14191,14 +14181,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 270.51 203.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -14280,15 +14262,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 219.71 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C110775"
 			(at 219.71 97.79 0)
 			(effects
@@ -14296,14 +14269,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 219.71 97.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -14385,15 +14350,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 204.47 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C110775"
 			(at 204.47 57.15 0)
 			(effects
@@ -14401,14 +14357,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 204.47 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -14490,15 +14438,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 157.48 91.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C110775"
 			(at 157.48 91.44 0)
 			(effects
@@ -14506,14 +14445,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 157.48 91.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -14769,14 +14700,6 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey-PN" ""
-			(at 304.8 125.73 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
 		(pin "3"
 			(uuid "4a8f41f9-9ea6-4c1b-9af8-35b84e5e0990")
 		)
@@ -14859,15 +14782,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 292.1 203.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 292.1 203.2 0)
 			(effects
@@ -14875,14 +14789,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 292.1 203.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -14964,15 +14870,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 43.18 53.34 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 43.18 53.34 0)
 			(effects
@@ -14980,14 +14877,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 43.18 53.34 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -15070,21 +14959,13 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
+		(property "LCSC" ""
 			(at 334.01 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 334.01 91.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -15166,15 +15047,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 222.25 128.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 222.25 128.27 0)
 			(effects
@@ -15182,14 +15054,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 222.25 128.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -15271,15 +15135,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 284.48 135.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 284.48 135.89 0)
 			(effects
@@ -15287,14 +15142,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 284.48 135.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -15376,15 +15223,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 212.09 201.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C83170"
 			(at 212.09 201.93 0)
 			(effects
@@ -15392,14 +15230,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 212.09 201.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -15481,15 +15311,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 102.87 66.04 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C107700"
 			(at 102.87 66.04 0)
 			(effects
@@ -15497,14 +15318,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 102.87 66.04 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -15651,15 +15464,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 304.8 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C75652"
 			(at 304.8 86.36 0)
 			(effects
@@ -15667,14 +15471,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 304.8 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -15759,6 +15555,97 @@
 		)
 	)
 	(symbol
+		(lib_id "Custom DS:APX803S_Brown_Out_Detector")
+		(at 39.37 130.81 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "cd528da3-4976-40a2-8c85-40207b59eb25")
+		(property "Reference" "U5"
+			(at 33.02 130.1749 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "APX803S (SOT23SA)"
+			(at 33.02 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 39.37 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 39.37 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Brown out detection circuit."
+			(at 39.37 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey" "APX803S-31SA-7DICT-ND"
+			(at 39.37 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C129757"
+			(at 39.37 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "22110c5e-52ef-412c-a2c0-7eb3da00f367")
+		)
+		(pin "3"
+			(uuid "0b968ae4-64ac-40c5-b1fe-3e6f491ebebe")
+		)
+		(pin "1"
+			(uuid "d009ca9d-5bf3-4edd-b5f2-868e01016064")
+		)
+		(instances
+			(project ""
+				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
+					(reference "U5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Custom DS:GPS_Antenna")
 		(at 231.14 147.32 0)
 		(unit 1)
@@ -15822,15 +15709,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 231.14 147.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C3284202"
 			(at 231.14 147.32 0)
 			(effects
@@ -15840,14 +15718,6 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey-PN" ""
-			(at 231.14 147.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
 		(pin "1"
 			(uuid "da1b6d85-b783-4994-b842-a01b83ee1efd")
 		)
@@ -15855,6 +15725,73 @@
 			(project ""
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "ANT1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 35.56 138.43 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "cf95b33b-e139-4ee3-8bbf-59a86d299423")
+		(property "Reference" "#SUPPLY021"
+			(at 35.56 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 37.084 140.462 0)
+			(effects
+				(font
+					(size 1.778 1.5113)
+				)
+				(justify left bottom)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 35.56 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 35.56 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 35.56 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "8c7f2764-819b-4e0f-90de-e5dac05e6ce8")
+		)
+		(instances
+			(project "ptSolar"
+				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
+					(reference "#SUPPLY021")
 					(unit 1)
 				)
 			)
@@ -15923,15 +15860,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 68.58 212.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C22364900"
 			(at 68.58 212.09 0)
 			(effects
@@ -15939,14 +15867,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 68.58 212.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -16028,15 +15948,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 107.95 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C110775"
 			(at 107.95 83.82 0)
 			(effects
@@ -16044,14 +15955,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 107.95 83.82 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -16133,15 +16036,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 234.95 195.58 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C108877"
 			(at 234.95 195.58 0)
 			(effects
@@ -16149,14 +16043,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 234.95 195.58 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -16247,15 +16133,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 309.88 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C541518"
 			(at 309.88 95.25 0)
 			(effects
@@ -16263,14 +16140,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 309.88 95.25 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -16352,15 +16221,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 189.23 140.97 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C110775"
 			(at 189.23 140.97 0)
 			(effects
@@ -16368,14 +16228,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 189.23 140.97 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -16388,6 +16240,72 @@
 			(project "ptSolar"
 				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
 					(reference "R21")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+BATT")
+		(at 35.56 123.19 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d4a9f6fc-95c7-44a2-b689-38a9c6769c70")
+		(property "Reference" "#PWR08"
+			(at 35.56 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+BATT"
+			(at 35.56 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 35.56 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 35.56 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+BATT\""
+			(at 35.56 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "da10f559-7811-468f-bcc0-2a0b6dd46fd3")
+		)
+		(instances
+			(project "ptSolar"
+				(path "/166d0a8f-2333-4a81-bfd6-a1b5ff84420a"
+					(reference "#PWR08")
 					(unit 1)
 				)
 			)
@@ -16598,14 +16516,6 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey-PN" ""
-			(at 118.11 66.04 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
 		(pin "1"
 			(uuid "45973308-0f3c-4bd4-8c16-207d74663c71")
 		)
@@ -16686,15 +16596,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 213.36 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C60816"
 			(at 213.36 119.38 0)
 			(effects
@@ -16702,14 +16603,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 213.36 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -16792,15 +16685,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 114.3 196.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C22364900"
 			(at 114.3 196.85 0)
 			(effects
@@ -16808,14 +16692,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 114.3 196.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -16962,15 +16838,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 68.58 190.5 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C22364900"
 			(at 68.58 190.5 0)
 			(effects
@@ -16978,14 +16845,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 68.58 190.5 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -17132,21 +16991,13 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
+		(property "LCSC" ""
 			(at 57.15 214.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 57.15 214.63 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -17228,21 +17079,13 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
+		(property "LCSC" ""
 			(at 104.14 208.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 104.14 208.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -17391,15 +17234,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 318.77 120.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C110775"
 			(at 318.77 120.65 0)
 			(effects
@@ -17407,14 +17241,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 318.77 120.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -17494,21 +17320,13 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
+		(property "LCSC" ""
 			(at 57.15 193.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 57.15 193.04 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
@@ -17678,15 +17496,6 @@
 				(hide yes)
 			)
 		)
-		(property "Field6" ""
-			(at 259.08 203.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "LCSC" "C107128"
 			(at 259.08 203.2 0)
 			(effects
@@ -17694,14 +17503,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "DigiKey-PN" ""
-			(at 259.08 203.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "2"
