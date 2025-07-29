@@ -8886,7 +8886,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 173.99 91.44 0)
 			(effects
 				(font
@@ -8895,7 +8895,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 173.99 91.44 0)
 			(effects
 				(font
@@ -9369,7 +9369,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 180.34 74.93 0)
 			(effects
 				(font
@@ -9378,7 +9378,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 180.34 74.93 0)
 			(effects
 				(font
@@ -11160,7 +11160,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARTR-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 134.62 210.82 0)
 			(effects
 				(font
@@ -11170,7 +11170,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 134.62 210.82 0)
 			(effects
 				(font
@@ -12158,7 +12158,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 245.11 92.71 0)
 			(effects
 				(font
@@ -12176,7 +12176,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 245.11 92.71 0)
 			(effects
 				(font
@@ -12725,7 +12725,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 196.85 74.93 0)
 			(effects
 				(font
@@ -12734,7 +12734,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 196.85 74.93 0)
 			(effects
 				(font
@@ -12940,7 +12940,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 189.23 128.27 0)
 			(effects
 				(font
@@ -12949,7 +12949,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 189.23 128.27 0)
 			(effects
 				(font
@@ -14077,7 +14077,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 220.98 57.15 0)
 			(effects
 				(font
@@ -14086,7 +14086,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 220.98 57.15 0)
 			(effects
 				(font
@@ -14253,7 +14253,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 219.71 97.79 0)
 			(effects
 				(font
@@ -14262,7 +14262,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 219.71 97.79 0)
 			(effects
 				(font
@@ -14341,7 +14341,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 204.47 57.15 0)
 			(effects
 				(font
@@ -14350,7 +14350,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 204.47 57.15 0)
 			(effects
 				(font
@@ -14429,7 +14429,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 157.48 91.44 0)
 			(effects
 				(font
@@ -14438,7 +14438,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 157.48 91.44 0)
 			(effects
 				(font
@@ -15939,7 +15939,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 107.95 83.82 0)
 			(effects
 				(font
@@ -15948,7 +15948,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 107.95 83.82 0)
 			(effects
 				(font
@@ -16212,7 +16212,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 189.23 140.97 0)
 			(effects
 				(font
@@ -16221,7 +16221,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 189.23 140.97 0)
 			(effects
 				(font
@@ -17225,7 +17225,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey" "311-10KARCT-ND"
+		(property "Digikey" "13-RT0805FRD0710KLCT-ND"
 			(at 318.77 120.65 0)
 			(effects
 				(font
@@ -17234,7 +17234,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C110775"
+		(property "LCSC" "C100047"
 			(at 318.77 120.65 0)
 			(effects
 				(font
@@ -17408,7 +17408,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C17470"
+		(property "LCSC" "C114558"
 			(at 134.62 198.12 0)
 			(effects
 				(font
