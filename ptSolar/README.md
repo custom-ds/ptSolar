@@ -14,10 +14,10 @@ Any changes to the schematic should be completed first. When placing a part, be 
 ### Schematic Outputs
 
 #### Bill of Materials
-Once complete with the Schematic, run the Tools-Generate Bill of Materials which places the BOM inside of the /Current folder.
+Once complete with the Schematic, run the Tools &rarr; Generate Bill of Materials, and click the Export button which places the BOM inside of the /Current folder.
 
 #### PDF Output
-Run File-Plot and output a PDF version of the schematics into the /Current folder. Be sure to rename this output to ```schematic.pdf``` in the output directory before plotting the PCB design.
+Run File &rarr; Plot and output a PDF version of the schematics into the /Current folder. Be sure to rename this output to ```schematic.pdf``` in the output directory before plotting the PCB design.
 
 ## PCB Design
 Inside of the Schematic editor, press F8 to update the PCB layout with any changes to the schematic. Adjust any layouts as necessary.
@@ -31,13 +31,13 @@ On the bottom silkscreen side of the board, update the Silkscreen text that indi
 ### PCB Outputs
 
 #### Drill Files
-Run the Files-Fabrication Outputs-Gerber. From that screen, click the Generate Drill Files and output the .DRL files into the /Current folder. The format should be Excellon, and the units Millimeters.
+Run the Files &rarr; Fabrication Outputs &rarr; Gerber. From that screen, click the Generate Drill Files and output the .DRL files into the /Current folder. The format should be Excellon, and the units Millimeters. Click Generate.
 
 #### Gerbers
 Close out of the Drill files window, and click the Plot button to generate the set of Gerber files. These should also go into the /Current folder.
 
 #### Position Files
-Run File-Fabrication Outputs-Placement Files. Select CSV for the Format, then click Generate Position File.
+Run File &rarr; Fabrication Outputs &rarr; Component Placement Files. Select CSV for the Format, then click Generate Position File.
 
 In the /Current folder, find the newly created ptSolar-top-pos.csv file and open it with a text editor. The very first header line needs to be replaced with this line to align with JLC's naming scheme.
 
@@ -46,7 +46,7 @@ Designator,Val,Package,Mid X,Mid Y,Rotation,Layer
 ```
 
 #### PDF Output
-Run File-Plot and output a PDF version of the pcb into the /Current folder. Select options for Black & White, and to plot as a single .PDF document. Be sure to rename this output to ```pcb.pdf``` in the output directory.
+Run File &rarr; Plot and output a PDF version of the PCB into the /Current folder. Select Plot Format as PDF in the upper left. Select options for Black & White, and to plot as a single .PDF document. Be sure to rename this output to ```pcb.pdf``` in the output directory.
 
 ## Ordering the PCBs
 ### Collecting the Output
@@ -61,10 +61,7 @@ Upload the Gerbers to the site. For the ptSolar tracker, select the following op
 * PCB Qty: As desired
 * Surface Finish: LeadFree HASL (Note you must select this before selecting the 0.6mm thickness)
 * PCB Thickness: 0.6mm
-* Castellated Holes: Yes (2 edges)
 * PCB Assembly: As desired
-
-Note that the Castellations will increase the cost of the PCB fabrication substantially. If cost is an absolute concern, it is possible to redesign the edge of the PCB around the eight castellations, and then trim that with a razor knife in the workshop.
 
 ### PCB Assembly
 If PCB Assembly is desired:
@@ -82,14 +79,14 @@ Process BOM & CPL. You will likely get an Error that certain Designators don't e
 
 Review the Bill of Materials and ensure that the part description matches the expected values. If certain parts aren't in-stock, you will either have to order them, or hand-place them once the semi-finished boards arrive.
 
-Once the board layout appears with the components placed on it, you will need to review each of the placements of the parts. Many of the semiconductors will be rotated 90 of 180 degrees out of spec, and you will need to adjust them. The best optoin is to open the ptSolar-top-pos.csv file, and edit the rotation values inside of the file. By doing this, you will save the copy of rotations locally and re-ordering will be that much simpler and safer.
+Once the board layout appears with the components placed on it, you will need to review each of the placements of the parts. Many of the semiconductors will be rotated 90 of 180 degrees out of spec, and you will need to adjust them. The best option is to open the ptSolar-top-pos.csv file, and edit the rotation values inside of the file. By doing this, you will save the copy of rotations locally and re-ordering will be that much simpler and safer.
 
 The column in question is the second-to-last field where most of the default values are 0.00000 or 180.00000.
 
 For the ptSolar the following parts need to be tweaked in the X/Y position to fit the pads correctly:
 * n/a
 
-The following components need to be rotated:
+The following components typically need to be rotated:
 * Q1-Q5 (transistors) - 180 degrees
 * U1 (3.3V Regulator) - 180 degrees
 * U2 (ATMega) - -90 degrees
