@@ -55,3 +55,9 @@ eagle.epf
 
 *.kicad_sch-bak
 /firmware/ptSolar/.theia
+*.zip
+*.gbr
+*.drl
+*bottom-pos.csv
+*top-pos.csv
+
