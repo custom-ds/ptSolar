@@ -11,6 +11,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Version History:
+Version 2.0.4 - September 25, 2025 - Fixed potential overflow issues when printing longs.
 Version 2.0.3 - August 25, 2025 - Forced the Tx line to the SA818 to be low prior to powering down, to fix bad start-up behavior.
 Version 2.0.2 - July 20, 2025 - Synchronized the ptFlex and ptSolar code bases to be parameterized by the TRACKER_PTFLEX and TRACKER_PTSOLAR defines.
 Version 2.0.1 - July 12, 2025 - Fixed bug that was corrupting the first packet.
@@ -299,9 +300,15 @@ void Modem::packetAppend(float f) {
  * @param bLeadingZero A boolean indicating whether or not to pad the number with leading zeros. If padded, the number will be 6 digits long.
  */
 void Modem::packetAppend(long lNumToSend, bool bLeadingZero) {
-  char szTemp[8];
-  if (bLeadingZero)  sprintf(szTemp, "%06lu", lNumToSend);    //convert the number to a string
-  else sprintf(szTemp, "%lu", lNumToSend);    //convert the number to a string
+  char szTemp[11];
+  if (bLeadingZero) {
+    //modulus the number to 999999 to make sure we don't exceed 6 digits
+    lNumToSend = lNumToSend % 1000000;
+    sprintf(szTemp, "%06lu", lNumToSend);    //convert the number to a string
+  }
+  else {
+    sprintf(szTemp, "%lu", lNumToSend);    //convert the number to a string
+  }
 
   this->packetAppend(szTemp);    //append the string to the packet buffer
 }
