@@ -57,6 +57,7 @@ eagle.epf
 /firmware/ptSolar/.theia
 *.zip
 *.gbr
+*.gbrjob
 *.drl
 *bottom-pos.csv
 *top-pos.csv
