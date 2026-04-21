@@ -1,6 +1,6 @@
 /*
 A Configuration object to storing settings for Project: Traveler Flight Controllers
-Copyright 2011-2025 - Zack Clobes (W0ZC), Custom Digital Services, LLC
+Copyright 2011-2026 - Zack Clobes (W0ZC), Custom Digital Services, LLC
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -11,6 +11,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Version History:
+Version 1.1.2 - April 11, 2026 - Fixed potential buffer overfow issue with the status message.
 Version 1.1.1 - July 20, 2025 - Synchronized the ptFlex and ptSolar code bases to be parameterized by the TRACKER_PTFLEX and TRACKER_PTSOLAR defines.
 Version 1.1.0 - July 12, 2025 - Updated to PT0101 configuration format, which simplied a few unused parameters.
 Version 1.0.0 - March 9, 2025 - Initial Release.
@@ -103,7 +104,7 @@ void ptConfig::setDefaultConfig() {
     this->_config.DisablePathAboveAltitude = 2000;
     this->_config.Symbol = 'O';    //letter O for balloons
     this->_config.SymbolPage = '/';
-    this->_config.BeaconSimpleDelay = 30;
+    this->_config.BeaconSimpleDelay = 45;
     this->_config.BeaconSpeedThreshLow = 20;
     this->_config.BeaconSpeedThreshHigh = 50;
     this->_config.BeaconSpeedDelayLow = 300;
@@ -111,11 +112,11 @@ void ptConfig::setDefaultConfig() {
     this->_config.BeaconSpeedDelayHigh = 120;
     this->_config.BeaconAltitudeThreshLow = 5000;
     this->_config.BeaconAltitudeThreshHigh = 20000;
-    this->_config.BeaconAltitudeDelayLow  = 30;
+    this->_config.BeaconAltitudeDelayLow  = 45;
     this->_config.BeaconAltitudeDelayMid  = 60;
-    this->_config.BeaconAltitudeDelayHigh = 45;
+    this->_config.BeaconAltitudeDelayHigh = 55;
     this->_config.BeaconSlot1 = 15;
-    this->_config.BeaconSlot2 = 45;
+    this->_config.BeaconSlot2 = 15;
     this->_config.StatusXmitGPSFix = 1;
     this->_config.StatusXmitBatteryVoltage = 1;
     this->_config.StatusXmitSeconds = 0;
@@ -124,7 +125,7 @@ void ptConfig::setDefaultConfig() {
     this->_config.RadioCourtesyTone = 0;
     strcpy(this->_config.RadioFreqTx, "144.3900");
     strcpy(this->_config.RadioFreqRx, "144.3900");
-    this->_config.MinTimeBetweenXmits = 55;    //55 seconds
+    this->_config.MinTimeBetweenXmits = 75;    //75 seconds
     this->_config.CheckSum = 410;		//Checksum for N0CALL
   
     this->writeEEPROM();
@@ -298,7 +299,7 @@ void ptConfig::readConfigParam(char *szParam, int iMaxLen) {
    
     
           //Status Message
-          this->readConfigParam(szParam, sizeof(szParam));
+          this->readConfigParam(szParam, sizeof(this->_config.StatusMessage));
           strcpy(this->_config.StatusMessage, szParam);
     
     
