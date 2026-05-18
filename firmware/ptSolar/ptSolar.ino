@@ -300,7 +300,7 @@ void loop() {
     }
 
     break;
-  case 3: {
+  case 3:
     //Use Time Slotting to determine when to transmit
     static unsigned long ulSlotTriggeredMillis = 0;
     iSeconds = GPSParser.getGPSSeconds();
@@ -331,7 +331,6 @@ void loop() {
     }
 
     break;
-  }
   case 4:
     //This is a voltage-checked time delay.  It will wait X seconds, but then also wait for the system (solar) voltage to be above a threshold before transmitting
     msDelay = (unsigned long)Config.getMinTimeBetweenXmits() * 1000;    //cast this to unsigned long
